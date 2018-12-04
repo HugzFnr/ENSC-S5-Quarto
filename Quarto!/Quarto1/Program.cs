@@ -11,6 +11,7 @@ namespace Quarto1
         static void Main(string[] args)
         {
             //WESH GUIGUITE
+            Console.WriteLine("TEST2");
         }
     }
 }
