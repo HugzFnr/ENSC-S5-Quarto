@@ -12,6 +12,7 @@ namespace Quarto1
         {
             //WESH GUIGUITE
             Console.WriteLine("TEST2");
+            int plop = 2;
         }
     }
 }
