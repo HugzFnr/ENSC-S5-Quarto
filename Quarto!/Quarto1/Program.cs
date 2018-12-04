@@ -39,5 +39,23 @@ namespace Quarto1
 
             };
         }
+        public static void AfficheGrille(string[][] symbole, int[] position) //affiche les pièces en mode 4*4 (avec ou sans bordures ?)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Console.WriteLine("+----+----+----+----+");
+                for (int k = 4 * i; k < 4 * (i + 1); k++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        Console.Write("|{0}", symbole[j][position[k]]); //affiche la partie j du symbole situé à la position k de symbolePieces
+                    }
+                    Console.Write("|\n");
+                }
+
+
+            }
+        }
+
     }
 }
