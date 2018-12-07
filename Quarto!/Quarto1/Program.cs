@@ -144,6 +144,8 @@ namespace Quarto1
             Console.WriteLine("                             ");
         }
 
+
+
         public static void JouerPiece(string[,] symbole, int[] position)
         {
             AfficherPiecesRestantes(symbole, position);
@@ -186,6 +188,8 @@ namespace Quarto1
             position[piece - 1] = emplacement - 1;
         }
 
+
+
         public static bool ValiderMouvement(int[] position, int piece, int emplacement) //indique si le mouvement souhaité est valide ou non.
         //ATTENTION : 'piece' et 'emplacement' doivent correspondre à un INDEX, et PAS A CE VOIT LE JOUEUR
         {
@@ -196,5 +200,72 @@ namespace Quarto1
                     return (false); //si 'emplacement' est déjà dans 'position[]', cela signifie que la case est indisponible.
             return (true); //si la piece est disponible et la case libre, le mouvement est valide
         }
+
+
+
+        public static bool GagnerPartie(int[] position, string[] code, int piecePlacee, int emplacement)
+        {
+            bool gagner = false;
+
+            //on part de l'endroit où la pièce est posée : dans tous les cas, il faut vérifier la colonne et la ligne pour savoir s'il y a un QUARTO
+            //si le nombre est divisible entièrement par 3 ou 5, il faut aussi prendre en compte la diagonale
+
+            //faut-il prendre en compte les diagonales ?
+            bool diagonale = false;
+
+            if (emplacement / 3 == 0 && emplacement != 15 && emplacement != 0) //diagonale  3, 6, 9, 12
+            {
+                int e = 3;
+                diagonale = true;
+            }
+            if (emplacement / 5 == 0) // diagonale 0, 5, 10, 15
+            {
+                int e = 5;
+                diagonale = true;
+            }
+
+
+            //traitement des lignes : pour chaque ligne de positionPiece, on vérifie pour chacun des 4 caractères si il est égal aux 4 autres
+            bool quartoLigne = true;
+
+            int i = emplacement / 4;
+            for (int k = 4*i; k < 4*i +3; k++)
+            {
+                if ()
+            }
+
+            //traitement des diagonales
+
+
+
+            //traitement des colonnes
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (code[i] != code[i + 1]) diagonale = false;
+            }
+
+            return (gagner);
+
+            /*
+            string[] codePiece = new string[]
+            {
+                "PBRV","PBRE","PBCV","PBCE",
+                "PNRV","PNRE","PNCV","PNCE",
+                "GBRV","GBRE","GBCV","GBCE",
+                "GNRV","GNRE","GNCV","GNCE"
+            };
+            */
+        }
+
+        public static int IdentifierContenuCase(int[] position, int emplacement)
+        {
+            for (int i = 0; i < 16; i++)
+                if (position[i] == emplacement)
+                    return (i);
+            return (-1);
+        }
+        
+
     }
 }
