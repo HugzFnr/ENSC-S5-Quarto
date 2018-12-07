@@ -48,7 +48,7 @@ namespace Quarto1
             //int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; //plateau initial
 
             int[] positionPiece = new int[] {0,-1,-1,10,4,-1,6,-1,8,9,-1,-1,12,7,-1,15}; //plateau préconçu 1
-                                                                                         //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
+            //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
 
             AfficherPiecesRestantes(symbolePiece, positionPiece);
             AfficherPlateau(symbolePiece, positionPiece);
@@ -226,12 +226,29 @@ namespace Quarto1
 
 
             //traitement des lignes : pour chaque ligne de positionPiece, on vérifie pour chacun des 4 caractères si il est égal aux 4 autres
-            bool quartoLigne = true;
+            bool quartoLigne;
 
-            int i = emplacement / 4;
-            for (int k = 4*i; k < 4*i +3; k++)
+            int i = emplacement / 4; //on identifie la ligne qui contient la case 'emplacement'
+            for (int k = 4*i; k < 4*i +3; k++) //on parcourt toute la ligne qui contient la case 'emplacement'
             {
-                if ()
+                if (IdentifierContenuCase(position, k) == -1 || IdentifierContenuCase(position, k + 1) == -1) // si une case de la ligne est vide, pas de quarto en ligne
+                    quartoLigne = false;
+                else
+                {
+                    int[] tab = { 1, 1, 1, 1 }; //on suppose que tous les caractères des identifiants de codePiece dans la ligne sont identiques (exemple : ils valent tous resp. "P", "B", "R" et "V")
+                    for (int j = 0; j < 3; j++) //pour chaque caractère on vérifie la correspondance entre deux cases adjacentes et met à jour tab[]
+                    {
+                        if (code[IdentifierContenuCase(position, k)][j] != code[IdentifierContenuCase(position, k + 1)][j+1])
+                            tab[j] = 0;
+                    }
+
+                    for (int j = 0; j < 4; j++)
+                        if (tab[j] == 1)
+                            //s'il subsiste un 1 dans tab, la caractéristique codePiece[IdentifierContenuCase(position, emplacement)][j] est commune à toutes les pièces de la ligne, cad on a quarto
+                            quartoLigne = true;
+
+                }
+                    
             }
 
             //traitement des diagonales
@@ -245,6 +262,7 @@ namespace Quarto1
                 if (code[i] != code[i + 1]) diagonale = false;
             }
 
+            gagner = quartoLigne;
             return (gagner);
 
             /*
@@ -258,7 +276,7 @@ namespace Quarto1
             */
         }
 
-        public static int IdentifierContenuCase(int[] position, int emplacement)
+        public static int IdentifierContenuCase(int[] position, int emplacement) //donne le rang de la pièce qui se trouve à 'emplacement' dans 'position[]'
         {
             for (int i = 0; i < 16; i++)
                 if (position[i] == emplacement)
