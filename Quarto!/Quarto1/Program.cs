@@ -45,17 +45,16 @@ namespace Quarto1
             //int[] positionPiece = new int[16]; //tableau qui répertorie la position de chaque pièce de codePiece
             //for (int i = 0; i < 16; i++) positionPiece[i] = -1; //initialisation de positionPiece
 
-            int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; //plateau initial
+            //int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; //plateau initial
 
-            //int[] positionPiece = new int[] {0,-1,-1,10,4,-1,6,-1,8,9,-1,-1,12,7,-1,15}; //plateau préconçu 1
-            //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
+            int[] positionPiece = new int[] {0,-1,-1,10,4,-1,6,-1,8,9,-1,-1,12,7,-1,15}; //plateau préconçu 1
+                                                                                         //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
 
-            //AfficherPieces(symbolePiece, positionPiece);
-            //AfficherPlateau(symbolePiece, positionPiece);
+            AfficherPiecesRestantes(symbolePiece, positionPiece);
+            AfficherPlateau(symbolePiece, positionPiece);
 
-            for (int i = 0; i<16; i++) //test du jeu, ça a l'air de pas trop mal marcher ... Ya plus qu'à faire l'IA !
-                JouerPiece(symbolePiece, positionPiece);
-            
+            //for (int i = 0; i<16; i++) //test du jeu, ça a l'air de pas trop mal marcher ... Ya plus qu'à faire l'IA !
+            //JouerPiece(symbolePiece, positionPiece);
 
 
             //for (int i = 0; i < 16; i++) Console.Write(" {0} ", positionPiece[i]); //affiche le contenu de 'positionPiece'
@@ -65,7 +64,8 @@ namespace Quarto1
 
         public static void AfficherPlateau(string[,] symbole, int[] position) //affiche le plateau de jeu
         {
-            Console.WriteLine("Voici l'état du plateau de jeu :");
+            Console.WriteLine("Voici le plateau de jeu :    \n                             ");
+
 
             for (int i = 0; i < 4; i++) //4 rangées sur le plateau donc 4 itérations pour mettre en forme
             {
@@ -110,9 +110,9 @@ namespace Quarto1
 
 
 
-        public static void AfficherPieces(string[,] symbole, int[] position) //affiche les pièces restantes
+        public static void AfficherPiecesRestantes(string[,] symbole, int[] position) //affiche les pièces restantes
         {
-            Console.WriteLine("Voici les pièces restantes   ");
+            Console.WriteLine("Voici les pièces restantes : ");
             for (int i = 0; i < 4; i++) //traitement des 4 lignes de l'affichage
             {
                 for (int j = 0; j < 2; j++) //permet de traiter les 2 niveaux de hauteur de chaque pièce dans symbolePiece
@@ -133,7 +133,7 @@ namespace Quarto1
                     }
                     Console.Write(" \n");
                 }
-                for (int j = 4 * i + 1; j <= 4 * i + 4; j++) //affichage d'une ligne du numéro de chaque case
+                for (int j = 4 * i + 1; j <= 4 * i + 4; j++) //affichage du numéro de chaque case en dessous de celle-ci
                 {
                     if (j < 10) Console.Write(" {0}     ", j);
                     else Console.Write(" {0}    ", j);
@@ -146,10 +146,10 @@ namespace Quarto1
 
         public static void JouerPiece(string[,] symbole, int[] position)
         {
-            AfficherPieces(symbole, position);
+            AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
 
-            Console.WriteLine("Quel pion voulez-vous jouer ?");
+            Console.WriteLine("Quel pion voulez-vous faire jouer ?");
             int piece = int.Parse(Console.ReadLine());
 
             Console.WriteLine("A quel emplacement voulez-vous jouer le pion choisi ?");
