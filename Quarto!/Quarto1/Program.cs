@@ -69,7 +69,7 @@ namespace Quarto1
             //for (int i = 0; i < 16; i++) Console.Write(" {0} ", positionPiece[i]); //affiche le contenu de 'positionPiece'
             //for (int i = 0; i < 16; i++) Console.Write(" {0} ", contenuCase[i]); //affiche le contenu de 'contenuCase'
 
-
+            LireSauvegarde(positionPiece, contenuCase, cheminFinal);
 
             //test du jeu, ça a l'air de pas trop mal marcher ... Ya plus qu'à faire l'IA !
             //int n = 0;
@@ -382,6 +382,7 @@ namespace Quarto1
             StreamReader fichier = new StreamReader(chemin);
             while ((sauvegardeValide)&&(iter < 16)&&((ligne=fichier.ReadLine())!=null))
             {
+                //gérer les cases vides
                 position[int.Parse(ligne)] = iter;
                 contenu[iter] = int.Parse(ligne);
             }
@@ -395,4 +396,4 @@ namespace Quarto1
         }
 
     }
-}
+
