@@ -196,5 +196,10 @@ namespace Quarto1
                     return (false); //si 'emplacement' est déjà dans 'position[]', cela signifie que la case est indisponible.
             return (true); //si la piece est disponible et la case libre, le mouvement est valide
         }
+
+        public static void SauvegarderPartie(int[] position)
+        {
+            
+        }
     }
 }
