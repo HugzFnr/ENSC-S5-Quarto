@@ -45,8 +45,7 @@ namespace Quarto1
             //int[] positionPiece = new int[16]; //tableau qui répertorie la position de chaque pièce de codePiece
             //for (int i = 0; i < 16; i++) positionPiece[i] = -1; //initialisation de positionPiece
 
-            //int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; 
-            //plateau initial
+            //int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; //plateau initial
             //int[] positionPiece = new int[] {0,-1,-1,10,4,-1,6,-1,8,9,-1,-1,12,7,-1,15}; //plateau préconçu 1
             //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
             int[] positionPiece = new int[] {0,1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};                   //ligne 1
@@ -173,12 +172,12 @@ namespace Quarto1
             AfficherPlateau(symbole, position);
 
             Console.WriteLine("Quel pion voulez-vous faire jouer ?");
-            int piece = int.Parse(Console.ReadLine());
+            int piece = int.Parse(Console.ReadLine()) - 1;
 
             Console.WriteLine("A quel emplacement voulez-vous jouer le pion choisi ?");
-            int emplacement = int.Parse(Console.ReadLine());
+            int emplacement = int.Parse(Console.ReadLine()) - 1;
 
-            while (!ValiderMouvement(position, piece-1, emplacement-1))
+            while (!ValiderMouvement(position, piece, emplacement))
                 {
                     Console.WriteLine("\nLes données indiquées ne correspondent pas à un coup valide !\nVeuillez saisir à nouveau ces informations :");
 
@@ -193,22 +192,22 @@ namespace Quarto1
             Console.WriteLine("\nVoulez vous vraiment jouer le pion {0} à l'emplacement {1} ?\n- Entrez o pour valider\n- Entrez n pour saisir à nouveau votre choix", piece, emplacement);
             string validation = Console.ReadLine();
 
-            while (validation != "o" || !ValiderMouvement(position, piece-1, emplacement-1)) //tant que le joueur ne valide pas, il faut recommencer
+            while (validation != "o" || !ValiderMouvement(position, piece, emplacement)) //tant que le joueur ne valide pas, il faut recommencer
             {
                 Console.WriteLine("\nVous avez choisi d'effectuer un autre mouvement, veuillez préciser votre choix :");
                 Console.WriteLine("- Quel pion voulez-vous jouer ?");
-                piece = int.Parse(Console.ReadLine());
+                piece = int.Parse(Console.ReadLine()) - 1;
 
                 Console.WriteLine("- A quel emplacement voulez-vous jouer le pion choisi ?");
-                emplacement = int.Parse(Console.ReadLine());
+                emplacement = int.Parse(Console.ReadLine()) - 1;
 
                 Console.WriteLine("\nVoulez vous vraiment jouer le pion {0} à l'emplacement {1} ?\n- Entrez oui pour valider\n- Entrez non pour saisir à nouveau votre choix", piece, emplacement);
                 validation = Console.ReadLine();
             }
 
-            position[piece - 1] = emplacement - 1;
+            position[piece] = emplacement;
             
-            return (GagnerPartie(position, code, piece - 1, emplacement - 1));
+            return (GagnerPartie(position, code, piece, emplacement));
         }
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
