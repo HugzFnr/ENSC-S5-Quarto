@@ -54,11 +54,11 @@ namespace Quarto1
             //int[] positionPiece = new int[16]; //tableau qui répertorie la position de chaque pièce de codePiece
             //for (int i = 0; i < 16; i++) positionPiece[i] = -1; //initialisation de positionPiece
 
-            //int[] positionPiece = new int[] {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; 
-            //plateau initial
+            int[] positionPiece = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }; //place de chaque pièce sur le plateau
+            int[] contenuCase = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }; //contenu de chaque case du plateau
             //int[] positionPiece = new int[] {0,-1,-1,10,4,-1,6,-1,8,9,-1,-1,12,7,-1,15}; //plateau préconçu 1
             //int[] positionPiece = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; //plateau préconçu 2
-            int[] positionPiece = new int[] {0,1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};                   //ligne 1
+            //int[] positionPiece = new int[] {0,1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};                   //ligne 1
             //int[] positionPiece = new int[] { 0, 4, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };  //colonne 1
             //int[] positionPiece = new int[] { 0, 5, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };  //diagonale 1
 
@@ -66,21 +66,20 @@ namespace Quarto1
             //AfficherPiecesRestantes(symbolePiece, positionPiece);
             //AfficherPlateau(symbolePiece, positionPiece);
 
-            for (int i = 0; i < 16; i++) Console.Write(" {0} ", positionPiece[i]); //affiche le contenu de 'positionPiece'
+            //for (int i = 0; i < 16; i++) Console.Write(" {0} ", positionPiece[i]); //affiche le contenu de 'positionPiece'
+            //for (int i = 0; i < 16; i++) Console.Write(" {0} ", contenuCase[i]); //affiche le contenu de 'contenuCase'
+
 
 
             //test du jeu, ça a l'air de pas trop mal marcher ... Ya plus qu'à faire l'IA !
             //int n = 0;
-            JouerPiece(symbolePiece, codePiece, positionPiece);
-            while (JouerPiece(symbolePiece, codePiece, positionPiece)[0] == -1)
+            int victoire = JouerPiece(symbolePiece, codePiece, positionPiece, contenuCase)[0];
+            while (victoire == -1)
             {
-                JouerPiece(symbolePiece, codePiece, positionPiece);
+                victoire = JouerPiece(symbolePiece, codePiece, positionPiece, contenuCase)[0];
             }
-            Console.WriteLine("\n\nQARTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n\n");
-
-
-
-
+            Console.WriteLine("\n+------+\n|QUARTO|\n+------+\n");
+                       
         }
 
 
@@ -176,18 +175,18 @@ namespace Quarto1
         /// JOUER PIECE
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
-        public static int[] JouerPiece(string[,] symbole, string[] code, int[] position)
+        public static int[] JouerPiece(string[,] symbole, string[] code, int[] position, int[] contenu)
         {
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
 
             Console.WriteLine("Quel pion voulez-vous faire jouer ?");
-            int piece = int.Parse(Console.ReadLine());
+            int piece = int.Parse(Console.ReadLine()) - 1;
 
             Console.WriteLine("A quel emplacement voulez-vous jouer le pion choisi ?");
-            int emplacement = int.Parse(Console.ReadLine());
+            int emplacement = int.Parse(Console.ReadLine()) - 1;
 
-            while (!ValiderMouvement(position, piece-1, emplacement-1))
+            while (!ValiderMouvement(position, piece, emplacement))
                 {
                     Console.WriteLine("\nLes données indiquées ne correspondent pas à un coup valide !\nVeuillez saisir à nouveau ces informations :");
 
@@ -198,26 +197,29 @@ namespace Quarto1
                     emplacement = int.Parse(Console.ReadLine());
                 }
 
+            /*
             //si le mouvement est valide, on demande confirmation au joueur pour qu'il valide son mouvement.
             Console.WriteLine("\nVoulez vous vraiment jouer le pion {0} à l'emplacement {1} ?\n- Entrez o pour valider\n- Entrez n pour saisir à nouveau votre choix", piece, emplacement);
             string validation = Console.ReadLine();
 
-            while (validation != "o" || !ValiderMouvement(position, piece-1, emplacement-1)) //tant que le joueur ne valide pas, il faut recommencer
+            while (validation != "o" || !ValiderMouvement(position, piece, emplacement)) //tant que le joueur ne valide pas, il faut recommencer
             {
                 Console.WriteLine("\nVous avez choisi d'effectuer un autre mouvement, veuillez préciser votre choix :");
                 Console.WriteLine("- Quel pion voulez-vous jouer ?");
-                piece = int.Parse(Console.ReadLine());
+                piece = int.Parse(Console.ReadLine()) - 1;
 
                 Console.WriteLine("- A quel emplacement voulez-vous jouer le pion choisi ?");
-                emplacement = int.Parse(Console.ReadLine());
+                emplacement = int.Parse(Console.ReadLine()) - 1;
 
                 Console.WriteLine("\nVoulez vous vraiment jouer le pion {0} à l'emplacement {1} ?\n- Entrez oui pour valider\n- Entrez non pour saisir à nouveau votre choix", piece, emplacement);
                 validation = Console.ReadLine();
             }
+            */
+            position[piece] = emplacement;
+            contenu[emplacement] = piece;
 
-            position[piece - 1] = emplacement - 1;
-            
-            return (GagnerPartie(position, code, piece - 1, emplacement - 1));
+
+            return (GagnerPartie(position, contenu, code, piece, emplacement));
         }
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
@@ -242,130 +244,102 @@ namespace Quarto1
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// ///
 
 
-        public static int[] GagnerPartie(int[] position, string[] code, int piecePlacee, int emplacement)
+        public static int[] GagnerPartie(int[] position, int[] contenu, string[] code, int piecePlacee, int emplacement)
         //retourne deux nombres, qui indiquent s'il s'agit d'un quarto en ligne ou colonne ou diagonale avec l'index du quarto dans la rangée. A défaut, retourne {-1,-1}
         //on part de l'endroit où la pièce est posée : dans tous les cas, il faut vérifier la colonne et la ligne pour savoir s'il y a un QUARTO
         {
-            int[] tabVictoire = { -1, -1 };
+            int[] tabVictoire = { -1, -1 }; //par défaut, GagnerPartie renvoie {-1,-1} (il n'y a de quarto dans aucune direction ni aucun caractère commun dans une rangée)
+                                            //tabVictoire c'est une direction + un attribut en commun
 
-            //on suppose que toutes les rangées ont on quarto potentiel
-            bool quartoLigne = true;
-            bool quartoColonne = true;
-            bool quartoDiagonale = true;
 
             //on détermine la première case chaque rangée
-            int ligneCase1 = 4 * (emplacement / 4);     //première case de la ligne
-            int colonneCase1 = 4 * (emplacement % 4);   //première case de la colonne
-            int diagonaleCase1 = -1;                    //première case de diagonale non définie, nécessaire cependant d'attribuer une valeur pour la suite
+            int ligneCase1 = emplacement / 4;            //1e case de la ligne
+            int colonneCase1 = emplacement % 4;          //1e case de la colonne
+            int diagonaleCase1 = -1;                     //1e case de diagonale non définie
 
-            //rend compte des caractères commun à toute une rangée, ici une ligne (le '1' au rang 0 correspond au caractère de rang 0 pour une string quelconque de codePiece
-            int[] caracteresLigne = { 1, 1, 1, 1 };      
-            int[] caracteresColonne = { 1, 1, 1, 1 };
-            int[] caracteresDiagonale = { 1, 1, 1, 1 };
+            int[,] attribut = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 } }; //on suppose que tous les pions de chaque rangée ont les mêmes attributs - A EXPLIQUER !!!
+            bool[] rangeeCompletee = { true, true, true }; //on suppose que toutes les rangées comptent 4 pions - A EXPLIQUER
 
+
+            bool pieceSurDiagonale = true; //on suppose que la piece jouee est bien sur une diagonale
             //si le nombre admet 0 pour reste de la division entière par 3 ou 5, il faut aussi prendre en compte les diagonales
             if (emplacement % 3 == 0 && emplacement != 15 && emplacement != 0) //diagonale  { 3, 6, 9, 12 }
-            {
-                diagonaleCase1 = 3;
-            }
-            if (emplacement % 5 == 0) // diagonale { 0, 5, 10, 15 }
-            {
-                diagonaleCase1 = 5;
-            }
-            else quartoDiagonale = false; // si la pièce n'est pas dans une diagonale, aucune chance d'avoir un quarto : on ne considère plus les diagonales
+                diagonaleCase1 = 3;     //1e case de diagonale
+            if (emplacement % 5 == 0)   // diagonale { 0, 5, 10, 15 } 
+                diagonaleCase1 = 0;     //1e case de diagonale
+            else pieceSurDiagonale = false; // si la pièce n'est pas dans une diagonale, on ne considère pas les diagonales
 
-
-            //traitement ligne
-            for (int i = ligneCase1; i < ligneCase1 + 3; i++) //COMMANDE SYMETRIQUE A COLONNE
-            {
-                if (IdentifierContenuCase(position, i) == -1 || IdentifierContenuCase(position, i + 1) == -1) // si une case de la série est vide, pas de quarto
-                    quartoLigne = false;
-                
-                if (quartoLigne)
-                for (int k = 0; k < 4; k++)
-                    {
-                        if (code[IdentifierContenuCase(position, i)][k] != code[IdentifierContenuCase(position, i + 1)][k])
-                            caracteresLigne[k] = 0;
-                    }
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                if (caracteresLigne[i] == 1 && quartoLigne)
-                {
-                    tabVictoire[0] = 1;
-                    tabVictoire[1] = i;
-                    return (tabVictoire); //s'il y a un caractère commun à toutes les pièces d'une rangée, il y a quarto.
-                }
-            }
+            int nombreDirections; //le nombre de directions étudiées dépend de la position de la piece : 3 pour une diagonale, 2 pour une 'hors-diagonale'
+            if (pieceSurDiagonale) nombreDirections = 3;
+            else nombreDirections = 2;
 
 
 
-            //traitement colonne
-            for (int i = colonneCase1; i < colonneCase1 + 3*4; i += 4) //COMMANDE SYMETRIQUE A LIGNE on peut proposer des valeurs 'incrémentation' et 'max' fixés antérieurement
-            {
-                if (IdentifierContenuCase(position, i) == -1 || IdentifierContenuCase(position, i + 1) == -1) // si une case de la colonne est vide, pas de quarto en ligne
-                    quartoColonne = false;
 
-                if (quartoColonne) //le quartoColonne permet d'éviter tous les tests de ce if() dès qu'on a trouvé une case vide
-                    for (int k = 0; k < 4; k++)
-                    {
-                        if (code[IdentifierContenuCase(position, i)][k] != code[IdentifierContenuCase(position, i + 1)][k])
-                            caracteresColonne[k] = 0;
-                    }
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                if (caracteresColonne[i] == 1 && quartoColonne)
-                {
-                    tabVictoire[0] = 2;
-                    tabVictoire[1] = i;
-                    return (tabVictoire); //s'il y a un caractère commun à toutes les pièces d'une colonne, il y a quarto en colonne.
-                }
-            }
-
-            //traitement diagonale
-            if (quartoDiagonale) //si le pion n'est pas dans une diagonale, pas de raison d'étudier ce cas
+            for (int x = 0; x<nombreDirections; x++) //on définit 3 directions (0,1,2) qui correspondent à horizontal, vertical, diagonal. 
             {
                 int incrementation;
-                int max;
+                int rangMin;
+                int rangMax;                
 
-                if (diagonaleCase1 == 3)
+                //Pour chaque direction on définit les bornes de la recherche et l'incrémentation
+                if (x == 0) //cas d'une ligne
                 {
-                    incrementation = 3;
-                    max = 12;
+                    incrementation = 1;
+                    rangMin = ligneCase1;
+                    rangMax = ligneCase1 + 3;
                 }
                 else
+                if (x == 1) //cas d'une colonne
                 {
-                    incrementation = 5;
-                    max = 15;
+                    incrementation = 4;
+                    rangMin = colonneCase1;
+                    rangMax = colonneCase1 + 3 * 4;
                 }
-                
-                for (int i = diagonaleCase1; i <= max; i += incrementation)
-                {
-                    if (IdentifierContenuCase(position, i) == -1 || IdentifierContenuCase(position, i + 1) == -1) // si une case de la colonne est vide, pas de quarto en ligne
-                        quartoDiagonale = false;
-
-                    if (quartoDiagonale) //le quartoDiagonale permet d'éviter tous les tests de ce if() dès qu'on a trouvé une case vide
-                        for (int k = 0; k < 4; k++)
-                        {
-                            if (code[IdentifierContenuCase(position, i)][k] != code[IdentifierContenuCase(position, i + 1)][k])
-                                caracteresDiagonale[k] = 0;
-                        }
-                }
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (caracteresDiagonale[i] == 1 && quartoDiagonale)
+                else //cas d'une diagonale
+                {                    
+                    if (diagonaleCase1 == 3) 
                     {
-                        tabVictoire[0] = 3;
-                        tabVictoire[1] = i;
-                        return (tabVictoire); //s'il y a un caractère commun à toutes les pièces d'une série, il y a quarto.
+                        incrementation = 3;
+                        rangMin = diagonaleCase1;
+                        rangMax = 12;
+                    }
+                    else
+                    {
+                        incrementation = 5;
+                        rangMin = diagonaleCase1;
+                        rangMax = 15;
+                    }
+                }
+
+                for (int i = rangMin; i < rangMax; i += incrementation) //on consière les 3 premières cases de la rangée
+                {
+                    if (contenu[i] == -1 || contenu[i + incrementation] == -1) // si la case considérée ou son adjacente est vide, on met à jour 'rangeeCompletee' dans la direction (0,1 ou 2)
+                        rangeeCompletee[x] = false;
+
+                    if (rangeeCompletee[x])
+                        for (int k = 0; k < 4; k++) //si la rangee est complète, on vérifie que chaque attribut de la pièce située en i est identique à la piece adjacente
+                        {
+                            if (code[contenu[i]][k] != code[contenu[i + incrementation]][k]) //si l'attribut considéré est distinct entre 2 cases adjacentes, on met à jour 'attribut'
+                                attribut[x,k] = 0;
+                        }
+                }      
+            }
+
+            for (int x = 0; x < nombreDirections; x++)
+            {
+                for (int i = 0; i < 4; i++) 
+                {
+                    if (attribut[x,i] == 1 && rangeeCompletee[x]) //si la case [x,i] est non nulle dans caracteres, cela signifie que les cases de la rangée x ont l'attribut i en commun
+                    {
+                        tabVictoire[0] = x; //on définit la direction du quarto 
+                        tabVictoire[1] = i; //on définit l'attribut en commun
+                        return (tabVictoire); //s'il y a un attribut commun à toutes les pièces d'une rangée, il y a quarto.
                     }
                 }
             }
-            return (tabVictoire);    
+            
+            return (tabVictoire);            
         }
 
 
@@ -381,6 +355,8 @@ namespace Quarto1
                     return (i);
             return (-1);
         }
+
+
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
         /// SAUVEGARDER PARTIE
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// ///         
