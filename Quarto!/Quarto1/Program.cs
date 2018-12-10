@@ -385,15 +385,38 @@ namespace Quarto1
         /// SAUVEGARDER PARTIE
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// ///         
 
-        public static void SauvegarderPartie(int[] position,string[] pieces,string chemin)
+        public static void SauvegarderPartie(int[] contenu,string[] pieces,string chemin)
         {
             string[] lignes = new string[16];
 
             for (int iter=0;iter<=15;iter++)
             {
-                lignes[iter] = pieces[IdentifierContenuCase(position, iter)];
+                int k = contenu[iter];
+                lignes[iter] = k.ToString();
+                
             }
             File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : fonction lireSauvegarde et intégrer l'option à la boucle de jeu
         }
+
+        public static bool LireSauvegarde(int[]position,int[] contenu, string chemin)
+        {
+            string ligne;
+            bool sauvegardeValide=true;
+            int iter = 0;
+            StreamReader fichier = new StreamReader(chemin);
+            while ((sauvegardeValide)&&(iter < 16)&&((ligne=fichier.ReadLine())!=null))
+            {
+                position[int.Parse(ligne)] = iter;
+                contenu[iter] = int.Parse(ligne);
+            }
+            fichier.Close();
+
+            if (iter == 15)
+                return sauvegardeValide = true;
+            else
+                return sauvegardeValide = false;
+            }
+        }
+
     }
 }
