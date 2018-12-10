@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Quarto1
 {
@@ -10,6 +11,14 @@ namespace Quarto1
     {
         static void Main(string[] args)
         {
+
+            //création d'un chemin d'accès au fichier de sauvegarde qui fonctionne sur tout système
+            string fichierActuel = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
+            string dossier = Path.GetDirectoryName(fichierActuel);
+            string cheminRelatif = @"Sauvegarde.txt";
+            string cheminFinal = Path.Combine(dossier, cheminRelatif);
+            cheminFinal = Path.GetFullPath(cheminFinal); 
+
             //partie test
             //Console.Title{ "Quarto!" }
             //Console.WriteLine("TEST2");
@@ -447,11 +456,19 @@ namespace Quarto1
                     return (i);
             return (-1);
         }
-        
+        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
+        /// SAUVEGARDER PARTIE
+        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// ///         
 
-        public static void SauvegarderPartie(int[] position)
+        public static void SauvegarderPartie(int[] position,string[] pieces,string chemin)
         {
-            
+            string[] lignes = new string[16];
+
+            for (int iter=0;iter<=15;iter++)
+            {
+                lignes[iter] = pieces[IdentifierContenuCase(position, iter)];
+            }
+            File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : fonction lireSauvegarde et intégrer l'option à la boucle de jeu
         }
     }
 }
