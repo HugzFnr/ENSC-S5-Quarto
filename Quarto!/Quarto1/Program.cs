@@ -372,5 +372,10 @@ namespace Quarto1
             return (-1);
         }
         
+
+        public static void SauvegarderPartie(int[] position)
+        {
+            
+        }
     }
 }
