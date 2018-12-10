@@ -17,7 +17,7 @@ namespace Quarto1
             string dossier = Path.GetDirectoryName(fichierActuel);
             string cheminRelatif = @"Sauvegarde.txt";
             string cheminFinal = Path.Combine(dossier, cheminRelatif);
-            cheminFinal = Path.GetFullPath(cheminFinal);
+            cheminFinal = Path.GetFullPath(cheminFinal); 
 
             //partie test
             //Console.Title{ "Quarto!" }
@@ -69,7 +69,7 @@ namespace Quarto1
             //for (int i = 0; i < 16; i++) Console.Write(" {0} ", positionPiece[i]); //affiche le contenu de 'positionPiece'
             //for (int i = 0; i < 16; i++) Console.Write(" {0} ", contenuCase[i]); //affiche le contenu de 'contenuCase'
 
-
+            LireSauvegarde(positionPiece, contenuCase, cheminFinal);
 
             //test du jeu, ça a l'air de pas trop mal marcher ... Ya plus qu'à faire l'IA !
             //int n = 0;
@@ -79,7 +79,7 @@ namespace Quarto1
                 victoire = JouerPiece(symbolePiece, codePiece, positionPiece, contenuCase)[0];
             }
             Console.WriteLine("\n+------+\n|QUARTO|\n+------+\n");
-
+                       
         }
 
 
@@ -115,7 +115,7 @@ namespace Quarto1
                                     Console.Write("{0}", symbole[j, m]);
                                     Console.ForegroundColor = ConsoleColor.Black;
                                 }
-                                else Console.Write("|{0}", symbole[j, m]);
+                                else Console.Write("|{0}", symbole[j, m]); 
                                 piecePlacee = true; //position k n'est pas vide, on met à jour piecePlacee pour passer à la pièce suivante
                             }
                         }
@@ -187,15 +187,15 @@ namespace Quarto1
             int emplacement = int.Parse(Console.ReadLine()) - 1;
 
             while (!ValiderMouvement(position, piece, emplacement))
-            {
-                Console.WriteLine("\nLes données indiquées ne correspondent pas à un coup valide !\nVeuillez saisir à nouveau ces informations :");
+                {
+                    Console.WriteLine("\nLes données indiquées ne correspondent pas à un coup valide !\nVeuillez saisir à nouveau ces informations :");
 
-                Console.WriteLine("- Quel pion voulez-vous jouer ?");
-                piece = int.Parse(Console.ReadLine());
+                    Console.WriteLine("- Quel pion voulez-vous jouer ?");
+                    piece = int.Parse(Console.ReadLine());
 
-                Console.WriteLine("- A quel emplacement voulez-vous jouer le pion choisi ?");
-                emplacement = int.Parse(Console.ReadLine());
-            }
+                    Console.WriteLine("- A quel emplacement voulez-vous jouer le pion choisi ?");
+                    emplacement = int.Parse(Console.ReadLine());
+                }
 
             /*
             //si le mouvement est valide, on demande confirmation au joueur pour qu'il valide son mouvement.
@@ -276,11 +276,11 @@ namespace Quarto1
 
 
 
-            for (int x = 0; x < nombreDirections; x++) //on définit 3 directions (0,1,2) qui correspondent à horizontal, vertical, diagonal. 
+            for (int x = 0; x<nombreDirections; x++) //on définit 3 directions (0,1,2) qui correspondent à horizontal, vertical, diagonal. 
             {
                 int incrementation;
                 int rangMin;
-                int rangMax;
+                int rangMax;                
 
                 //Pour chaque direction on définit les bornes de la recherche et l'incrémentation
                 if (x == 0) //cas d'une ligne
@@ -297,8 +297,8 @@ namespace Quarto1
                     rangMax = colonneCase1 + 3 * 4;
                 }
                 else //cas d'une diagonale
-                {
-                    if (diagonaleCase1 == 3)
+                {                    
+                    if (diagonaleCase1 == 3) 
                     {
                         incrementation = 3;
                         rangMin = diagonaleCase1;
@@ -321,16 +321,16 @@ namespace Quarto1
                         for (int k = 0; k < 4; k++) //si la rangee est complète, on vérifie que chaque attribut de la pièce située en i est identique à la piece adjacente
                         {
                             if (code[contenu[i]][k] != code[contenu[i + incrementation]][k]) //si l'attribut considéré est distinct entre 2 cases adjacentes, on met à jour 'attribut'
-                                attribut[x, k] = 0;
+                                attribut[x,k] = 0;
                         }
-                }
+                }      
             }
 
             for (int x = 0; x < nombreDirections; x++)
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++) 
                 {
-                    if (attribut[x, i] == 1 && rangeeCompletee[x]) //si la case [x,i] est non nulle dans caracteres, cela signifie que les cases de la rangée x ont l'attribut i en commun
+                    if (attribut[x,i] == 1 && rangeeCompletee[x]) //si la case [x,i] est non nulle dans caracteres, cela signifie que les cases de la rangée x ont l'attribut i en commun
                     {
                         tabVictoire[0] = x; //on définit la direction du quarto 
                         tabVictoire[1] = i; //on définit l'attribut en commun
@@ -338,8 +338,8 @@ namespace Quarto1
                     }
                 }
             }
-
-            return (tabVictoire);
+            
+            return (tabVictoire);            
         }
 
 
@@ -358,62 +358,42 @@ namespace Quarto1
 
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
-        /// CHOISIR PIECE IA
-        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
-
-        public static int ChoisirPieceIA(int[] position) //l'IA choisit aléatoirement une pièce à jouer
-        {
-            Random aleatoire = new Random();
-            int piece = aleatoire.Next(16); //nb aléatoire entre 0 et 15
-
-            if (position[piece] == -1) //si la piece n'est pas placee, on peut la choisir
-                return (piece);
-            else //tant que la piece n'est pas valide, on en génère une autre
-                while (position[piece] == -1) piece = aleatoire.Next(16);
-
-            return (piece);
-        }
-
-        public static int ChoisirPieceJoueur(int[] position) //le joueur choisit la pièce qu'il veut faire jouer à l'IA
-        {
-            Console.WriteLine("Quel pion voulez-vous faire jouer ?");
-            int piece = int.Parse(Console.ReadLine());
-
-            while (piece - 1 < 0 || piece - 1 > 15)
-            {
-
-            }
-
-            if (position[piece] == -1) //si la piece n'est pas placee, on peut la choisir
-                return (piece);
-
-            else //tant que la piece n'est pas valide, on demande une autre pièce à faire jouer à l'IA
-                while (position[piece] == -1)
-                {
-
-                }
-
-            return (piece);
-        }
-
-
-
-        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
         /// SAUVEGARDER PARTIE
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// ///         
 
-        public static void SauvegarderPartie(int[] position, string[] pieces, string chemin)
+        public static void SauvegarderPartie(int[] contenu,string[] pieces,string chemin)
         {
             string[] lignes = new string[16];
 
-            for (int iter = 0; iter <= 15; iter++)
+            for (int iter=0;iter<=15;iter++)
             {
-                lignes[iter] = pieces[IdentifierContenuCase(position, iter)];
+                int k = contenu[iter];
+                lignes[iter] = k.ToString();
+                
             }
             File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : fonction lireSauvegarde et intégrer l'option à la boucle de jeu
         }
+
+        public static bool LireSauvegarde(int[]position,int[] contenu, string chemin)
+        {
+            string ligne;
+            bool sauvegardeValide=true;
+            int iter = 0;
+            StreamReader fichier = new StreamReader(chemin);
+            while ((sauvegardeValide)&&(iter < 16)&&((ligne=fichier.ReadLine())!=null))
+            {
+                //gérer les cases vides
+                position[int.Parse(ligne)] = iter;
+                contenu[iter] = int.Parse(ligne);
+            }
+            fichier.Close();
+
+            if (iter == 15)
+                return sauvegardeValide = true;
+            else
+                return sauvegardeValide = false;
+            }
+        }
+
     }
-}
-
-
 
