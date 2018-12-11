@@ -97,11 +97,12 @@ namespace Quarto1
 
 			int premierJoueur = ia;
 			DeroulerPartie(symbolePiece, codePiece, positionPiece, contenuCase, premierJoueur);
-			
+
+            Console.ReadLine();
 		}
 
 		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
-		/// AFFICHER PLATEAU
+		/// DEROULER PARTIE
 		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
 		public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int premierJoueur)
@@ -123,15 +124,19 @@ namespace Quarto1
 			Console.WriteLine("\nrangée : {0}\nattribut commun : {1}\n", coup[0], coup[1]);
 
 			Console.WriteLine("\n+------+\n|QUARTO|\n+------+\n");
-		}
+
+            if (joueurEnCours == 0)
+                Console.WriteLine("\n+----------------+\n|Victoire de l'IA|\n+----------------+\n");
+            else Console.WriteLine("\n+-------------------+\n|Victoire de l'Humain|\n+-------------------+\n");
+
+        }
 
 
-		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
-		/// AFFICHER PLATEAU
-		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
+        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
+        /// AFFICHER PLATEAU
+        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
-
-		public static void AfficherPlateau(string[,] symbole, int[] position) //affiche le plateau de jeu
+        public static void AfficherPlateau(string[,] symbole, int[] position) //affiche le plateau de jeu
         {
             Console.WriteLine("Voici le plateau de jeu :    \n                             ");
 
