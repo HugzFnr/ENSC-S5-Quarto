@@ -226,7 +226,7 @@ namespace Quarto1
             int piece;
             if (joueur == 0) //c'est le tour de l'IA, c'est elle qui choisit une piece à jouer
             {
-                piece = ChoisirPieceIA(position); //une pièce entre 0 et 15
+                piece = ChoisirPieceIA(position, contenu, code); //une pièce entre 0 et 15
                 Console.WriteLine("L'IA vous donne la piece {0}.", piece + 1);
             }
             else
@@ -447,11 +447,20 @@ namespace Quarto1
             return (-1);
         }
 
-        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
-        /// CHOISIR PIECE IA
-        /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
+		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
+		/// CHOISIR PIECE IA
+		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
-        public static int ChoisirPieceIA(int[] position) //l'IA choisit aléatoirement une pièce à jouer
+		//fonction qui gère les différentes versions de sélection de pièce IA
+		public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code)
+		{
+			if (ChoisirPieceNonGagnanteIA(position, contenu, code) == -1)
+				return ChoisirPieceHasardIA(position);
+			else return ChoisirPieceNonGagnanteIA(position, contenu, code);
+		}
+
+		//version qui renvoit une pièce prise au hasard	parmi celles disponibles
+        public static int ChoisirPieceHasardIA(int[] position) //l'IA choisit aléatoirement une pièce à jouer
         {			
             Random aleatoire = new Random();
             int rangPiece = aleatoire.Next(16); //nb aléatoire entre 0 et 15
@@ -463,6 +472,68 @@ namespace Quarto1
 
             return (rangPiece);
         }
+		
+		//version qui renvoit le rang d'une pièce non gagnante ou -1
+		public static int ChoisirPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)
+		{
+			//on répertorie les pièces disponibles
+			int compteur = 0;
+			for (int i = 0; i < 16; i++)
+				if (position[i] == -1)
+					compteur++;
+
+			//création et remplissage d'un tableau qui répertorie les pièces libres
+			int[] piecesLibres = new int[compteur];
+			int k = 0;
+			for (int i = 0; i < 16; i++)
+			{
+				//on associe à chaque case de piecesLibres le rang de la pièces disponible
+				if (position[i] == -1)
+				{
+					piecesLibres[k] = i;
+					k++;
+				}
+			}
+
+			//on initialise le nombre de coups non gagnants
+			int nbCoupsNonGagnants = 0;
+
+			//on change en -1 le rang des pièces qui permettent un coup gagnant et on compte combien il y a de coups non gagnants
+			for (int i = 0; i < compteur; i++)
+			{
+				//si on trouve un coup gagnant avec la pièce considérée, on le signale par un -1
+				if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, piecesLibres[i]) != -1)
+					piecesLibres[i] = -1;
+				else
+					nbCoupsNonGagnants++;
+			}
+
+			//si tous les coups sont gagnants, on retourne -1
+			if (nbCoupsNonGagnants == 0)
+				return (-1);
+			//sinon, on renvoit une pièce au hasard parmi celles qui ne permettent pas de coup gagnant
+			else
+			{
+				int j = 0;
+				//on crée un tableau qui répertorie les coups non gagnants
+				int[] coupsNonGagnants = new int[nbCoupsNonGagnants];
+				for (int i = 0; i < compteur; i++)
+				{
+					//si la valeur à l'index i de pièces libres n'est pas -1, c'est qu'on n'a pas trouvé de coup gagnant pour cette pièce, on peut donc la jouer
+					if (piecesLibres[i] != -1)
+					{
+						coupsNonGagnants[j] = piecesLibres[i];
+						j++;
+					}
+				}
+
+				Random aleatoire = new Random();
+				int refPieceDonnee = aleatoire.Next(nbCoupsNonGagnants); //nb aléatoire entre 0 et nbCoupsNonGagnants
+
+				//on renvoit le coup non gagnant en position refPieceDonnee de coupsNonGagnants
+				return (coupsNonGagnants[refPieceDonnee]);
+			}
+		}
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
         /// CHOISIR PIECE JOUEUR
@@ -492,7 +563,8 @@ namespace Quarto1
                         Console.WriteLine("\nLes données indiquées ne correspondent pas à un coup valide !");
                         rangPiece = DemanderEtConvertirEnNombreEntreeJoueur("Veuillez saisir à nouveau la pièce à jouer :") - 1;
 					}
-                }
+
+				}
 
             return (rangPiece);
         }
@@ -501,9 +573,16 @@ namespace Quarto1
 		/// CHOISIR EMPLACEMENT IA
 		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
-		//version au hasard
-		/*
-		public static int ChoisirEmplacementIA(int[] contenu) //l'IA choisit aléatoirement une case pour jouer sa pièce
+		//fonction qui gère les différentes versions de sélection de case IA
+		public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee)
+		{
+			if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee) == -1)
+				return ChoisirEmplacementHasardIA(contenu);
+			else return ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee);
+		}
+
+		//version qui joue au hasard		
+		public static int ChoisirEmplacementHasardIA(int[] contenu) //l'IA choisit aléatoirement une case pour jouer sa pièce
         {			
             Random aleatoire = new Random();
             int rangCase = aleatoire.Next(16); //nb aléatoire entre 0 et 15
@@ -515,10 +594,11 @@ namespace Quarto1
 
             return (rangCase);			
 		}
-		*/
+		
 
-		public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee)
-		{	
+		public static int ChoisirEmplacementCoupGagnantIA(int[] position, int[] contenu, string[] code, int pieceDonnee)
+		{	//IA qui repère si elle a un coup gagnant avec la pieceDonnee
+
 			//décompte du nombre de cases libres sur le plateau
 			int compteur = 0;
 			for (int i = 0; i < 16; i++)
@@ -553,15 +633,15 @@ namespace Quarto1
 
 				copieContenu[positionsLibres[iterations]] = pieceDonnee;
 				//on vérifie s'il y a Quarto en posant la piece à la position libre			
-				if (GagnerPartie(position, copieContenu, code, pieceDonnee, positionsLibres[iterations])[0] != -1) return (positionsLibres[iterations]);
+				if (GagnerPartie(position, copieContenu, code, pieceDonnee, positionsLibres[iterations])[0] != -1)
+					//si on trouve un quarto on renvoit la position gagnante
+					return (positionsLibres[iterations]);
 
 				iterations++;
 			}
-
-			Random aleatoire = new Random();
-			int indexPositionsLibres = aleatoire.Next(compteur); //nb aléatoire entre 0 et compteur
-
-			return (positionsLibres[indexPositionsLibres]);
+			
+			//si on ne trouve pas de Quarto, on renvoit -1
+			return (-1);
 		}
 
 
