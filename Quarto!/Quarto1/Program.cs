@@ -459,10 +459,21 @@ namespace Quarto1
 		//fonction qui gère les différentes versions de sélection de pièce IA
 		public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code)
 		{
-			if (ChoisirPieceNonGagnanteIA(position, contenu, code) == -1)
+            //si il n'y a pas de coup gagnant, on choisit une pièce au hasard
+			if (ChoisirPieceNonGagnanteIA(position, contenu, code)[0] == -1)
 				return ChoisirPieceHasardIA(position);
-			else return ChoisirPieceNonGagnanteIA(position, contenu, code);
-		}
+			else
+            {
+                int possibilites = ChoisirPieceNonGagnanteIA(position, contenu, code).Length;
+
+                Random aleatoire = new Random();
+                int refPieceDonnee = aleatoire.Next(possibilites); //nb aléatoire entre 0 et nbCoupsNonGagnants
+
+                //on choisit un coup gagnant au hasard parmi ceux disponibles
+                return ChoisirPieceNonGagnanteIA(position, contenu, code)[refPieceDonnee];
+            }
+
+        }
 
 		//version qui renvoit une pièce prise au hasard	parmi celles disponibles
         public static int ChoisirPieceHasardIA(int[] position) //l'IA choisit aléatoirement une pièce à jouer
@@ -478,9 +489,35 @@ namespace Quarto1
             return (rangPiece);
         }
 		
+        //nouveau
+        public static int[] DeterminerPiecesLibres(int[] position)
+        {
+            //on répertorie les pièces disponibles
+            int compteur = 0;
+            for (int i = 0; i < 16; i++)
+                if (position[i] == -1)
+                    compteur++;
+
+            //création et remplissage d'un tableau qui répertorie les pièces libres
+            int[] piecesLibres = new int[compteur];
+            int k = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                //on associe à chaque case de piecesLibres le rang de la pièces disponible
+                if (position[i] == -1)
+                {
+                    piecesLibres[k] = i;
+                    k++;
+                }
+            }
+            return piecesLibres;
+        }
+
+
 		//version qui renvoit le rang d'une pièce non gagnante ou -1
-		public static int ChoisirPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)
+		public static int[] ChoisirPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)
 		{
+            /*
 			//on répertorie les pièces disponibles
 			int compteur = 0;
 			for (int i = 0; i < 16; i++)
@@ -499,12 +536,17 @@ namespace Quarto1
 					k++;
 				}
 			}
+            */
 
-			//on initialise le nombre de coups non gagnants
-			int nbCoupsNonGagnants = 0;
+            //nouveau
+            int[] piecesLibres = DeterminerPiecesLibres(position);
+            int nbPiecesLibres = piecesLibres.Length;
+
+            //on initialise le nombre de coups non gagnants
+            int nbCoupsNonGagnants = 0;
 
 			//on change en -1 le rang des pièces qui permettent un coup gagnant et on compte combien il y a de coups non gagnants
-			for (int i = 0; i < compteur; i++)
+			for (int i = 0; i < /*compteur*/ nbPiecesLibres; i++)
 			{
 				//si on trouve un coup gagnant avec la pièce considérée, on le signale par un -1
 				if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, piecesLibres[i]) != -1)
@@ -513,16 +555,19 @@ namespace Quarto1
 					nbCoupsNonGagnants++;
 			}
 
-			//si tous les coups sont gagnants, on retourne -1
-			if (nbCoupsNonGagnants == 0)
-				return (-1);
-			//sinon, on renvoit une pièce au hasard parmi celles qui ne permettent pas de coup gagnant
-			else
+            //si tous les coups sont gagnants, on retourne {-1} : l'IA a perdu
+            if (nbCoupsNonGagnants == 0)
+            {
+                int[] perdu = { -1 };
+                return (perdu);
+            }
+            //sinon, on renvoit toutes les pièces qui ne permettent pas de coup gagnant
+            else
 			{
 				int j = 0;
 				//on crée un tableau qui répertorie les coups non gagnants
 				int[] coupsNonGagnants = new int[nbCoupsNonGagnants];
-				for (int i = 0; i < compteur; i++)
+				for (int i = 0; i < /*compteur*/ nbPiecesLibres; i++)
 				{
 					//si la valeur à l'index i de pièces libres n'est pas -1, c'est qu'on n'a pas trouvé de coup gagnant pour cette pièce, on peut donc la jouer
 					if (piecesLibres[i] != -1)
@@ -535,10 +580,33 @@ namespace Quarto1
 				Random aleatoire = new Random();
 				int refPieceDonnee = aleatoire.Next(nbCoupsNonGagnants); //nb aléatoire entre 0 et nbCoupsNonGagnants
 
-				//on renvoit le coup non gagnant en position refPieceDonnee de coupsNonGagnants
-				return (coupsNonGagnants[refPieceDonnee]);
+				//on renvoit tous les coups non gagnants
+				return coupsNonGagnants;
 			}
 		}
+
+        //le coup est parfait si en donnant une pièce au joueur, on est sûr de gagner où qu'il la place et quelle que soit la pièce qu'il nous donne ensuite
+        /*
+        public static bool CoupParfait(int piece)
+        {
+            //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
+            if ()
+            {
+                for ()
+                {
+                    for ()
+                    {
+                        if ()
+                            return false;
+                    }
+                }
+                return true;
+            }
+            else
+                //si le coup fait perdre l'IA au prochain tour, il n'est pas parfait
+                return false;
+        }
+        */
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
         /// CHOISIR PIECE JOUEUR
@@ -641,15 +709,16 @@ namespace Quarto1
 				}
 			}
 
-			int iterations = 0;
-			int[] copieTabContenu = new int[16];
 
             //on crée une copie de tabContenu
+            int[] copieTabContenu = new int[16];
             for (int i = 0; i < 16; i++)
             {
                 copieTabContenu[i] = tabContenu[i];
             }
 
+            //on teste chaque position libre avec pieceDonnee pour savoir s'il y a un Quarto
+            int iterations = 0;
             while (iterations < compteur)
 			{
                 //on change copieTabContenu en plaçant pieceDonnee sur la case vide de casesLibres dont le rang est iterations
