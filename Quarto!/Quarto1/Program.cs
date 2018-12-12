@@ -587,74 +587,95 @@ namespace Quarto1
 		}
 
 		//version qui joue au hasard		
-		public static int ChoisirEmplacementHasardIA(int[] contenu) //l'IA choisit aléatoirement une case pour jouer sa pièce
-        {			
+		public static int ChoisirEmplacementHasardIA(int[] contenu) //l'IA choisit aléatoirement une case parmi celles disponibles pour jouer sa pièce
+        {
+            //décompte du nombre de cases libres sur le plateau
+            int compteur = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                if (contenu[i] == -1)
+                    compteur++;
+            }
+
+            //création et remplissage d'un tableau qui répertorie les cases libres du plateau
+            int[] casesLibres = new int[compteur];
+            int k = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                if (contenu[i] == -1)
+                {
+                    //on répertorie la position libre
+                    casesLibres[k] = i;
+                    k++;
+                }
+            }
+
             Random aleatoire = new Random();
-            int rangCase = aleatoire.Next(16); //nb aléatoire entre 0 et 15
-
-            if (contenu[rangCase] == -1) //si l'emplacement est libre, on peut le choisir
-                return (rangCase);
-            else //tant que l'emplacement n'est pas valide, on en génère une autre
-                while (contenu[rangCase] == -1) rangCase = aleatoire.Next(16);
-
+            int rangCase = casesLibres[aleatoire.Next(compteur)]; //case aléatoire de positionsLibres dont le rang est entre 0 et compteur
+                       
             return (rangCase);			
 		}
 		
 
-		public static int ChoisirEmplacementCoupGagnantIA(int[] position, int[] contenu, string[] code, int pieceDonnee)
+		public static int ChoisirEmplacementCoupGagnantIA(int[] tabposition, int[] tabContenu, string[] tabcode, int pieceDonnee)
 		{	//IA qui repère si elle a un coup gagnant avec la pieceDonnee
 
 			//décompte du nombre de cases libres sur le plateau
 			int compteur = 0;
 			for (int i = 0; i < 16; i++)
 			{
-				if (contenu[i] == -1)
+				if (tabContenu[i] == -1)
 					compteur++;
 			}
 
 			//création et remplissage d'un tableau qui répertorie les cases libres du plateau
-			int[] positionsLibres = new int[compteur];
+			int[] casesLibres = new int[compteur];
 			int k = 0;
 			for (int i = 0; i < 16; i++)
 			{
-				if (contenu[i] == -1)
+				if (tabContenu[i] == -1)
 				{
-					//on répertorie la position libre
-					positionsLibres[k] = i;
+                    //on répertorie la position libre
+                    casesLibres[k] = i;
 					k++;
 				}
 			}
 
 			int iterations = 0;
-			int[] copieContenu = new int[16];
-			
-			while(iterations < compteur)
+			int[] copieTabContenu = new int[16];
+
+            //on crée une copie de tabContenu
+            for (int i = 0; i < 16; i++)
+            {
+                copieTabContenu[i] = tabContenu[i];
+            }
+
+            while (iterations < compteur)
 			{
-				//on crée une copie de contenu
-				for (int i = 0; i < 16; i++)
-				{
-					copieContenu[i] = contenu[i];
-				}
+                //on change copieTabContenu en plaçant pieceDonnee sur la case vide de casesLibres dont le rang est iterations
+				copieTabContenu[casesLibres[iterations]] = pieceDonnee;
 
-				copieContenu[positionsLibres[iterations]] = pieceDonnee;
 				//on vérifie s'il y a Quarto en posant la piece à la position libre			
-				if (GagnerPartie(position, copieContenu, code, pieceDonnee, positionsLibres[iterations])[0] != -1)
+				if (GagnerPartie(tabposition, copieTabContenu, tabcode, pieceDonnee, casesLibres[iterations])[0] != -1)
 					//si on trouve un quarto on renvoit la position gagnante
-					return (positionsLibres[iterations]);
+					return (casesLibres[iterations]);
 
-				iterations++;
+                //si on ne trouve pas de Quarto, on réinitialise la valeur de la case changée précédement
+                copieTabContenu[casesLibres[iterations]] = -1;
+                
+                //on incrémente iterationns pour passer à la case suivante de casesLibres
+                iterations++;
 			}
 			
 			//si on ne trouve pas de Quarto, on renvoit -1
 			return (-1);
 		}
-
-
+                
 		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 		/// CHOISIR EMPLACEMENT JOUEUR
 		/// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
 
-		public static int ChoisirEmplacementJoueur(int[] contenu) //le joueur choisit une case pour jouer sa pièce
+		public static int ChoisirEmplacementJoueur(int[] tabContenu) //le joueur choisit une case pour jouer sa pièce
         {
 			int rangCase = DemanderEtConvertirEnNombreEntreeJoueur("Où voulez-vous placer la pièce ?") -1;
 
@@ -664,11 +685,11 @@ namespace Quarto1
                 rangCase = DemanderEtConvertirEnNombreEntreeJoueur("Où voulez-vous placer la pièce ?") - 1;
             }
 
-            if (contenu[rangCase] == -1) //si l'emplacement est libre, on peut le choisir
+            if (tabContenu[rangCase] == -1) //si l'emplacement est libre, on peut le choisir
                 return (rangCase);
 
             else //tant que l'emplacement n'est pas valide, on demande une autre case où jouer la pièce
-                while (contenu[rangCase] != -1)
+                while (tabContenu[rangCase] != -1)
                 {
                     Console.WriteLine("Cette case est déjà occupée, veuillez en sélectionner une autre.");
                     rangCase = DemanderEtConvertirEnNombreEntreeJoueur("Où voulez-vous placer la pièce ?") - 1;
