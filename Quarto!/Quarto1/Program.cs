@@ -401,8 +401,6 @@ namespace Quarto1
 					//quand on trouve une case vide, on met à jour 'rangeeCompletee' dans la direction (0, 1 ou 2) et attribut
 					if (contenu[i] == -1 || contenu[i + incrementation] == -1)
 					{
-						//DEBOGAGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-						//Console.WriteLine("suppression de la rangée {0} car la case {1} contient {2} et la case {3} contient {4}", x, i, contenu[i], i + incrementation, contenu[i + incrementation]); 
 						rangeeCompletee[x] = false;
 						for (int j = 0; j < 4; j++) attribut[x,j] = 0; //aucun caractère commun aux 4 pions de la rangée puisque rangée incomplète
 					}
@@ -420,9 +418,6 @@ namespace Quarto1
 			//on cherche dans attribut s'il y a encore un 1, qui voudrait dire qu'après vérification, il y a bien une similitude entre tous les pions d'une rangée
             for (int x = 0; x < nombreDirections; x++)
             {
-				//DEBOGAGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-				//Console.WriteLine("rangée {0} : a0 = {1} - a1 = {2} - a2 = {3} - a3 = {4}", x, attribut[x,0], attribut[x, 1], attribut[x, 2], attribut[x, 3]);
-
 				for (int i = 0; i < 4; i++)
                 {
 					//si la case [x,i] est non nulle dans attribut, cela signifie que les cases de la rangée x ont l'attribut i en commun
@@ -459,6 +454,15 @@ namespace Quarto1
 		//fonction qui gère les différentes versions de sélection de pièce IA
 		public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code)
 		{
+            int[] piecesLibres = DeterminerPiecesLibres(contenu);
+            for (int i = 0; i < piecesLibres.Length; i++)
+                if (CoupParfait(position, contenu, code, i))
+                {
+                    Console.WriteLine("Coup parfait trouvé !");
+                    return i;
+                }
+                    
+
             //si il n'y a pas de coup gagnant, on choisit une pièce au hasard
 			if (ChoisirPieceNonGagnanteIA(position, contenu, code)[0] == -1)
 				return ChoisirPieceHasardIA(position);
@@ -489,56 +493,12 @@ namespace Quarto1
             return (rangPiece);
         }
 		
-        //nouveau
-        public static int[] DeterminerPiecesLibres(int[] position)
-        {
-            //on répertorie les pièces disponibles
-            int compteur = 0;
-            for (int i = 0; i < 16; i++)
-                if (position[i] == -1)
-                    compteur++;
-
-            //création et remplissage d'un tableau qui répertorie les pièces libres
-            int[] piecesLibres = new int[compteur];
-            int k = 0;
-            for (int i = 0; i < 16; i++)
-            {
-                //on associe à chaque case de piecesLibres le rang de la pièces disponible
-                if (position[i] == -1)
-                {
-                    piecesLibres[k] = i;
-                    k++;
-                }
-            }
-            return piecesLibres;
-        }
+        
 
 
 		//version qui renvoit le rang d'une pièce non gagnante ou -1
 		public static int[] ChoisirPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)
-		{
-            /*
-			//on répertorie les pièces disponibles
-			int compteur = 0;
-			for (int i = 0; i < 16; i++)
-				if (position[i] == -1)
-					compteur++;
-
-			//création et remplissage d'un tableau qui répertorie les pièces libres
-			int[] piecesLibres = new int[compteur];
-			int k = 0;
-			for (int i = 0; i < 16; i++)
-			{
-				//on associe à chaque case de piecesLibres le rang de la pièces disponible
-				if (position[i] == -1)
-				{
-					piecesLibres[k] = i;
-					k++;
-				}
-			}
-            */
-
-            //nouveau
+		{      
             int[] piecesLibres = DeterminerPiecesLibres(position);
             int nbPiecesLibres = piecesLibres.Length;
 
@@ -585,28 +545,94 @@ namespace Quarto1
 			}
 		}
 
-        //le coup est parfait si en donnant une pièce au joueur, on est sûr de gagner où qu'il la place et quelle que soit la pièce qu'il nous donne ensuite
-        /*
-        public static bool CoupParfait(int piece)
+        //renvoit un tableau avec les rangs de toutes les pièces disponibles
+        public static int[] DeterminerPiecesLibres(int[] position)
         {
-            //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
-            if ()
+            //on répertorie les pièces disponibles
+            int compteur = 0;
+            for (int i = 0; i < 16; i++)
+                if (position[i] == -1)
+                    compteur++;
+
+            //création et remplissage d'un tableau qui répertorie les pièces libres
+            int[] piecesLibres = new int[compteur];
+            int k = 0;
+            for (int i = 0; i < 16; i++)
             {
-                for ()
+                //on associe à chaque case de piecesLibres le rang de la pièces disponible
+                if (position[i] == -1)
                 {
-                    for ()
+                    piecesLibres[k] = i;
+                    k++;
+                }
+            }
+            return piecesLibres;
+        }
+
+        /// ON POURRAIT SCINDER CES DEUX FONCTIONS EN UNE SEULE (DETERMINER ...) AVEC UN INDICE 0 POUR LES PIECES ET 1 POUR LES CASES
+
+        //renvoit un tableau avec les rangs de toutes les pièces disponibles
+        public static int[] DeterminerCasesLibres(int[] contenu)
+        {
+            //on répertorie les pièces disponibles
+            int compteur = 0;
+            for (int i = 0; i < 16; i++)
+                if (contenu[i] == -1)
+                    compteur++;
+
+            //création et remplissage d'un tableau qui répertorie les pièces libres
+            int[] casesLibres = new int[compteur];
+            int k = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                //on associe à chaque case de piecesLibres le rang de la pièces disponible
+                if (contenu[i] == -1)
+                {
+                    casesLibres[k] = i;
+                    k++;
+                }
+            }
+            return casesLibres;
+        }
+
+        //le coup est parfait si en donnant une pièce au joueur, on est sûr de gagner où qu'il la place et quelle que soit la pièce qu'il nous donne ensuite        
+        public static bool CoupParfait(int[] position, int[] contenu, string[] code, int piece)
+        {
+            //on vérifie que si le coup est non gagnant pour le joueur
+            int[] coupsNonGagnants = ChoisirPieceNonGagnanteIA(position, contenu, code);
+
+            //a priori le coup n'est pas bon
+            bool coupOk = false;
+            for (int i = 0; i < coupsNonGagnants.Length; i++)
+                //si on trouve une case contenant piece alors on peut jouer sans risque la pièce
+                if (coupsNonGagnants[i] == piece)
+                    coupOk = true;
+
+
+            //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
+            if (coupOk)
+            {
+                int[] piecesLibres = DeterminerPiecesLibres(position);
+                int[] casesLibres = DeterminerCasesLibres(contenu);
+
+                //quelle que soit la case où jouera l'humain
+                for (int i = 0; i < casesLibres.Length; i++)
+                {
+                    //et quelle que soit la piece qu'il choisira de donner à l'IA
+                    for (int j = 0; j < piecesLibres.Length; j++)
                     {
-                        if ()
+                        //on trouvera un coup gagnant
+                        if (ChoisirEmplacementCoupGagnantIA( position, contenu, code, j) == -1)
+                            //si ce n'est pas le cas, le coup n'est pas parfait
                             return false;
                     }
                 }
                 return true;
             }
-            else
-                //si le coup fait perdre l'IA au prochain tour, il n'est pas parfait
-                return false;
+            //si le coup peut fait perdre l'IA au prochain tour, il n'est pas parfait
+            return false;
         }
-        */
+        
 
         /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// /// 
         /// CHOISIR PIECE JOUEUR
