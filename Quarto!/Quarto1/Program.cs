@@ -664,6 +664,7 @@ namespace Quarto1
 
                 int[] copiePosition = new int[16];
                 int[] copieContenu = new int[16];
+
                 //quelle que soit la case où jouera l'humain
                 for (int i = 0; i < casesLibres.Length; i++)
                 {
@@ -671,17 +672,20 @@ namespace Quarto1
                     for (int j = 0; j < piecesLibres.Length; j++)
                     {
                         //on copie position et contenu
-                        for(int k = 0; i<position.Length;i++)
+                        for(int k = 0; k<position.Length;k++)
                         {
                             copiePosition[k] = position[k];
                             copieContenu[k] = contenu[k];
                         }
 
+                        //n° des pièces libres
                         copiePosition[piecesLibres[j]] = casesLibres[i];
+
+                        //n° des cases libres
                         copieContenu[casesLibres[i]] = piecesLibres[j];
 
                         //on trouvera un coup gagnant
-                        if (ChoisirEmplacementCoupGagnantIA( position, contenu, code, j) == -1)
+                        if (ChoisirEmplacementCoupGagnantIA( copiePosition, copieContenu, code, j) == -1)
                             //si ce n'est pas le cas, le coup n'est pas parfait
                             return false;
                     }
