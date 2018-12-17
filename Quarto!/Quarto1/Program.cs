@@ -695,10 +695,31 @@ namespace Quarto1
             //si le coup peut fait perdre l'IA au prochain tour, il n'est pas parfait
             return false;
         }
-                
+        
+        /*        
+        //bon emplacement : ne pas mettre la pièce à un endroit qui donne un coup parfait à l'adversaire
+        public static int ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)
+        {
+            int[] piecesLibres = DeterminerPiecesLibres(position);
+            int[] casesLibres = DeterminerCasesLibres(contenu);
+
+            int k = 0;
+            //si l'emplacement donne un ou plusieurs coups parfaits à l'adversaire, c'est nul
+            foreach (int i in piecesLibres)
+            {
+                if (!CoupParfait(position, contenu, code, piece)) k++;
+            }
+
+            int[] tabBonEmplacement = new int[k];
+            for(int i = 0; i<k;i++)
+            {
+                if (!CoupParfait(position, contenu, code, piece)) tabBonEmplacement[i] = piece;
+            }
+        }
+        */
 
         //Sauvegarde
-		public static void SauvegarderPartie(int[] contenu, string[] pieces, string chemin)
+        public static void SauvegarderPartie(int[] contenu, string[] pieces, string chemin)
 		{
 			string[] lignes = new string[16];
 
