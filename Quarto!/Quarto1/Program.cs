@@ -11,16 +11,14 @@ namespace Quarto1
     {
         static void Main(string[] args)
         {
-            /*
+            
             //création d'un chemin d'accès au fichier de sauvegarde qui fonctionne sur tout système
             string fichierActuel = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
             string dossier = Path.GetDirectoryName(fichierActuel);
             string cheminRelatif = @"Sauvegarde.txt";
             string cheminFinal = Path.Combine(dossier, cheminRelatif);
             cheminFinal = Path.GetFullPath(cheminFinal);
-			*/
 
-            //LireSauvegarde(positionPiece, contenuCase, cheminFinal);
 
             //partie test
             //Console.Title{ "Quarto!" }
@@ -57,6 +55,9 @@ namespace Quarto1
             positionPiece = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
             contenuCase = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
+            //s'il une sauvegarde valide est enregistrée dans Sauvegarde.txt, il la lit, sinon le jeu commence avec les valeurs initialisées ci-dessus, à savoir un plateau vide
+            if (SauvegardeValide(cheminFinal))
+                LireSauvegarde(positionPiece, contenuCase, cheminFinal);
 
             /*
 			//cases du milieu pour des quarto rapides
@@ -705,8 +706,8 @@ namespace Quarto1
             }
             File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : fonction lireSauvegarde et intégrer l'option à la boucle de jeu
         }
-        
-        public static bool LireSauvegarde(int[] position, int[] contenu, string chemin)
+
+        public static bool SauvegardeValide(string chemin)
         {
             string ligne;
             bool sauvegardeValide = true;
@@ -714,16 +715,42 @@ namespace Quarto1
             StreamReader fichier = new StreamReader(chemin);
             while ((sauvegardeValide) && (iter < 16) && ((ligne = fichier.ReadLine()) != null))
             {
-                //gérer les cases vides
-                position[int.Parse(ligne)] = iter;
-                contenu[iter] = int.Parse(ligne);
+                if (int.Parse(ligne) < -1 || int.Parse(ligne) > 15)
+                    return sauvegardeValide = false;
+                iter++;
+
             }
             fichier.Close();
 
-            if (iter == 15)
+            if (iter == 16)
                 return sauvegardeValide = true;
             else
                 return sauvegardeValide = false;
+        }
+
+
+        public static void LireSauvegarde(int[] position, int[] contenu, string chemin)
+        {
+            string ligne;
+
+            int iter = 0;
+            StreamReader fichier = new StreamReader(chemin);
+            while ((iter < 16) && ((ligne = fichier.ReadLine()) != null))
+            {
+                //gérer les cases vides
+                if (int.Parse(ligne) != -1)
+                {
+                    position[int.Parse(ligne)] = iter;
+                   contenu[iter] = int.Parse(ligne);
+                }
+                else
+                {
+                    contenu[iter] = -1;
+                }
+                iter++;
+            }
+            fichier.Close();
+
         }
 
 
