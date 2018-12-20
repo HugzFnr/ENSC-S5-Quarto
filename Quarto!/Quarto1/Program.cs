@@ -666,17 +666,20 @@ namespace Quarto1
         public static bool CoupParfait(int[] position, int[] contenu, string[] code, int piece)//notion de coup parfait
         {
             //le coup est parfait si en donnant une pièce au joueur, on est sûr de gagner où qu'il la place et quelle que soit la pièce qu'il nous donne ensuite        
+            Console.WriteLine("piece = {0} - commentaire dans coupParfait", piece);
 
             //on vérifie que si le coup est non gagnant pour le joueur
             int[] coupsNonGagnants = ListerPieceNonGagnanteIA(position, contenu, code);
-            
+            //foreach (int i in coupsNonGagnants)
+                //Console.WriteLine("contenu de coups non gagnants : {0} - commentaire dans coupParfait", i);
+
             //a priori le coup n'est pas bon
             bool coupOk = false;
-            for (int i = 0; i < coupsNonGagnants.Length; i++)
+            foreach (int i in coupsNonGagnants)
                 //si piece figure parmi les coups non gagnants, on peut la jouer
-                if (coupsNonGagnants[i] == piece)
-                    coupOk = true;
+                if (i == piece) coupOk = true;
 
+            Console.WriteLine("presence de la piece {0} dans les coups non gagnants : {1} - commentaire dans coupParfait", piece, coupOk);
 
             //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
             if (coupOk)
@@ -722,7 +725,7 @@ namespace Quarto1
                 
         }
         
-               
+        //ici il suffit en fait de prévoir : placer cette pièce ici donne-t-il la victoire à mon adversaire au prochain tour ?
         //bon emplacement : renvoit un emplacement qui ne donne pas un coup parfait à l'adversaire en fonction de la pièce reçue
         public static int[] ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)
         {
