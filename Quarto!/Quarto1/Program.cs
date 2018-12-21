@@ -516,7 +516,7 @@ namespace Quarto1
             return (rangPiece);
         }
 				
-		public static int[] ListerPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)//version qui renvoit le rang d'une pièce non gagnante ou -1
+		public static int[] ListerPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)//version qui renvoit le rang des pièces non gagnantes ou -1
 		{      
             int[] piecesLibres = DeterminerPiecesLibres(position);
             int nbPiecesLibres = piecesLibres.Length;
@@ -570,21 +570,26 @@ namespace Quarto1
             if (coupGagnant != -1)
                 return coupGagnant;
             else
-            {     
+            {
+                Console.WriteLine("pas de coup gagnant - ChoisirEmplacementIA");
+                //sinon on joue un bon coup
                 int[] bonEmplacement = ChoisirBonEmplacement(position, contenu, code, pieceDonnee);
-                Console.WriteLine(bonEmplacement[0]);
-
                 if (bonEmplacement[0] != -1)
                 {
-                    //si on trouve un bon emplacement, on joue à cet endroit
+                    Console.WriteLine("bon coup trouvé - ChoisirEmplacementIA");
+
                     Random aleatoire = new Random();
-                    int rangEmplacement = aleatoire.Next(bonEmplacement.Length);
-                    return bonEmplacement[rangEmplacement];
+                    int emplacement = bonEmplacement[aleatoire.Next(bonEmplacement.Length)];
+
+                    return emplacement;
                 }
 
-                //sinon, on joue au hasard  
+                //s'il n'y a ni bon coup, ni coup gagnant, on a forcément perdu, donc on joue au hasard  
                 else
+                {
+                    Console.WriteLine("pas de bon coup - ChoisirEmplacementIA");
                     return ChoisirEmplacementHasardIA(contenu);
+                }
             }
         }
 
@@ -661,12 +666,76 @@ namespace Quarto1
             return (-1);
         }
 
+        public static int[] ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)//renvoit tous les emplacement qui permettent d'avoir des pièces non gagnantes à donner au prochain tour
+        {
+            int[] piecesLibres = DeterminerPiecesLibres(position);
+            int[] casesLibres = DeterminerCasesLibres(contenu);
+
+            //on crée des copies des tableaux contenu et position pour ne pas les modifier dans la phase de prédictions
+            int[] copiePosition = new int[16];
+            int[] copieContenu = new int[16];
+
+            int[] triEmplacement = new int[casesLibres.Length];
+            for (int i = 0; i < triEmplacement.Length; i++)
+                triEmplacement[i] = -1;
+
+            //pour chaque case, on vérifie si il existe une pièce non gagnante que l'on peut donner à l'adversaire
+            for (int i = 0; i < casesLibres.Length; i++)
+            {
+                //pour chaque pièce libre, on doit vérifier si elle admet des coups gagnants
+                for (int j = 0; j < piecesLibres.Length; j++)
+                {
+                    //il faut adapter position et contenu pour avoir la situation où piece est posée en i
+                    for (int k = 0; k < position.Length; k++)
+                    {
+                        copiePosition[k] = position[k];
+                        copieContenu[k] = contenu[k];
+                    }
+
+                    //piece est en i
+                    copiePosition[piece] = casesLibres[i];
+                    //en i on a piece
+                    copieContenu[casesLibres[i]] = piece;
+
+                    //s'il y au moins une pièce non gagnante en réserve, on pourra la choisir avec ChoisirPieceIA
+                    if (ChoisirEmplacementCoupGagnantIA(copiePosition, copieContenu, code, piecesLibres[j]) == -1)
+                        triEmplacement[i] = casesLibres[i];
+                }
+            }
+
+            int size = 0;
+            foreach (int i in triEmplacement)
+                if (i != -1) size++;
+
+            //si on ne trouve pas de bon emplacement, on renvoit -1
+
+            if (size == 0)
+            {
+                int[] pasDeBonEmplacement = { -1 };
+                return pasDeBonEmplacement;
+            }
+            else
+            {
+                int[] bonEmplacement = new int[size];
+                int j = 0;
+                for (int i = 0; i < triEmplacement.Length; i++)
+                {
+                    if (triEmplacement[i] != -1)
+                    {
+                        bonEmplacement[j] = triEmplacement[i];
+                        j++;
+                    }
+                }
+                return bonEmplacement;
+            }
+        }
+
 
         //en cours ...
         public static bool CoupParfait(int[] position, int[] contenu, string[] code, int piece)//notion de coup parfait
         {
             //le coup est parfait si en donnant une pièce au joueur, on est sûr de gagner où qu'il la place et quelle que soit la pièce qu'il nous donne ensuite        
-            Console.WriteLine("piece = {0} - commentaire dans coupParfait", piece);
+            //Console.WriteLine("piece = {0} - commentaire dans coupParfait", piece);
 
             //on vérifie que si le coup est non gagnant pour le joueur
             int[] coupsNonGagnants = ListerPieceNonGagnanteIA(position, contenu, code);
@@ -679,7 +748,7 @@ namespace Quarto1
                 //si piece figure parmi les coups non gagnants, on peut la jouer
                 if (i == piece) coupOk = true;
 
-            Console.WriteLine("presence de la piece {0} dans les coups non gagnants : {1} - commentaire dans coupParfait", piece, coupOk);
+            //Console.WriteLine("presence de la piece {0} dans les coups non gagnants : {1} - commentaire dans coupParfait", piece, coupOk);
 
             //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
             if (coupOk)
@@ -715,7 +784,7 @@ namespace Quarto1
                             return false;
                     }
                 }
-                Console.WriteLine("coup parfait détecté - commentaire dans CoupParfait");              
+                //Console.WriteLine("coup parfait détecté - commentaire dans CoupParfait");              
                 return true;
             }
             //si le coup peut fait perdre l'IA au prochain tour, il n'est pas parfait
@@ -723,71 +792,6 @@ namespace Quarto1
                 return false;
             
                 
-        }
-        
-        //ici il suffit en fait de prévoir : placer cette pièce ici donne-t-il la victoire à mon adversaire au prochain tour ?
-        //bon emplacement : renvoit un emplacement qui ne donne pas un coup parfait à l'adversaire en fonction de la pièce reçue
-        public static int[] ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)
-        {
-            int[] piecesLibres = DeterminerPiecesLibres(position);
-            int[] casesLibres = DeterminerCasesLibres(contenu);
-
-            int[] copiePosition = new int[16];
-            int[] copieContenu = new int[16];
-
-            int size = 0;
-            //on compte le nombre d'emplacements qui ne donnent pas de coup parfait à l'adversaire
-            foreach (int i in casesLibres)
-            {
-                //on copie position et contenu
-                for (int k = 0; k < position.Length; k++)
-                {
-                    copiePosition[k] = position[k];
-                    copieContenu[k] = contenu[k];
-                }
-
-                //n° des pièces libres
-                copiePosition[piece] = i;
-
-                //n° des cases libres
-                copieContenu[i] = contenu[piece];
-
-                //on crée une copie de position et contenu pour tester CoupParfait avec les bons paramètres de position et contenu
-                if (!CoupParfait(copiePosition, copieContenu, code, piece)) size++;
-            }
-
-            //maintenant on crée le tableau des bonnes positions, sauf si toutes les positions donnent un coup parfait à l'adversaire
-            int[] tabBonEmplacement = new int[size];
-            int n = 0;
-            int[] echecRechercheBonEmplacement = { -1 };
-            if (size == 0)
-                return echecRechercheBonEmplacement;
-            else
-            {
-                foreach (int i in casesLibres)
-                {
-                    //on copie position et contenu
-                    for (int k = 0; k < position.Length; k++)
-                    {
-                        copiePosition[k] = position[k];
-                        copieContenu[k] = contenu[k];
-                    }
-
-                    //n° des pièces libres
-                    copiePosition[piece] = i;
-
-                    //n° des cases libres
-                    copieContenu[i] = contenu[piece];
-
-                    //si la position ne permet pas de coup parfait, on l'enregistre
-                    if (!CoupParfait(copiePosition, copieContenu, code, piece))
-                    {
-                        tabBonEmplacement[n] = i;
-                        n++;
-                    }
-                }
-            }
-            return (tabBonEmplacement);
         }
         
 
