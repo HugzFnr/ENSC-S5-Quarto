@@ -49,8 +49,17 @@ namespace Quarto1
             contenuCase = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
             //s'il une sauvegarde valide est enregistrée dans Sauvegarde.txt, il la lit, sinon le jeu commence avec les valeurs initialisées ci-dessus, à savoir un plateau vide
-            if (SauvegardeValide(cheminFinal))
-                LireSauvegarde(positionPiece, contenuCase, cheminFinal);
+
+            if (SauvegardeValide(cheminFinal)) {
+                string rep;
+                do {
+                Console.WriteLine("Une sauvegarde valide a été détectée. Entrez O pour la charger ou N pour lancer une nouvelle partie (et écraser la partie sauvegardée)");
+                rep = Console.ReadLine();
+                if (rep=="O") { LireSauvegarde(positionPiece, contenuCase, cheminFinal); }
+                  
+                    } while (!(rep=="O" || rep=="N"));
+            } 
+ 
 
             /*
 			//cases du milieu pour des quarto rapides
@@ -863,28 +872,44 @@ namespace Quarto1
                 lignes[iter] = k.ToString();
 
             }
-            File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : fonction lireSauvegarde et intégrer l'option à la boucle de jeu
+            File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : intégrer l'option à la boucle de jeu + prendre en compte le tour en cours, la diff et l'IA
         }
 
-        public static bool SauvegardeValide(string chemin)
-        {
+        public static bool SauvegardeValide(string chemin) //une sauvegarde est valide lorsque ses 16 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
+        {                                                  // et lorsque chaque pièce n'est écrite qu'une fois
             string ligne;
             bool sauvegardeValide = true;
+
+            int nombreTeste;
             int iter = 0;
+            bool [] emplacementPris = new bool [16]; //par défaut, aucun emplacement n'est utilisé
+
+
             StreamReader fichier = new StreamReader(chemin);
             while ((sauvegardeValide) && (iter < 16) && ((ligne = fichier.ReadLine()) != null))
             {
-                if (int.Parse(ligne) < -1 || int.Parse(ligne) > 15)
-                    return sauvegardeValide = false;
+                if (int.TryParse(ligne, out nombreTeste)) { //on vérifie que la ligne contient un nombre (du moins une entrée convertible en int)
+                
+                    if (nombreTeste < -1 || nombreTeste > 15) //si c'est bien un nombre, on vérifie que sa valeur correspond à une pièce du jeu
+                        return sauvegardeValide = false;
+
+                    else
+                    {
+                        if (nombreTeste>=0) {
+                           if (emplacementPris[nombreTeste]) return sauvegardeValide = false;
+                           else emplacementPris[nombreTeste]=true; //on met à jour le tableau
+                        }
+                    } 
+                }
+                else return sauvegardeValide = false;
+
+
                 iter++;
 
             }
             fichier.Close();
 
-            if (iter == 16)
-                return sauvegardeValide = true;
-            else
-                return sauvegardeValide = false;
+            return sauvegardeValide = true; //si la fonction tourne encore c'est que les 16 premières lignes sont valides
         }
 
 

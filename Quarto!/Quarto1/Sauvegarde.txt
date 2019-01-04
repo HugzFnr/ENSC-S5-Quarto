@@ -1,19 +1,17 @@
 13
 6
-8
+4
 1
 7
 -1
 -1
 12
-32
+2
 -1
 -1
 -1
 10
 15
-4
-9
-M
-D
-R
+0
+3
+STOP -- Au-dessus se situe la 16ème ligne
