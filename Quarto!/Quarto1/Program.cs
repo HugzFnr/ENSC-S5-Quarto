@@ -20,17 +20,10 @@ namespace Quarto1
             cheminFinal = Path.GetFullPath(cheminFinal);
 
 
-            //partie test
-            //Console.Title{ "Quarto!" }
-            //Console.WriteLine("TEST2");
-            //string test = "ABCD";
-            //Console.WriteLine(test[0]);
+            Console.Title = "App. du jeu Quarto! par G.GROSSE et H.FOURNIER";
+            //on initialise les couleurs d'écriture (foreground) et de background
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
-
-            //Console.WriteLine("White on blue.");
-            //Console.WriteLine("Another line.");
-            //fin de la partie test
 
             string[] codePiece = new string[]
             {
@@ -123,15 +116,22 @@ namespace Quarto1
                         {
                             if (position[m] == k) //si on trouve la valeur k, on sait que l'indice de la position (cad m) correspond à celui de la pièce correspondante (ça sera symbole[j,m])
                             {
-                                //if (3 < k && k < 8 || 11 < k && k < 16) //pour jouer les pièces blanches, on passe momentanément en White pour la couleur du Foreground, puis on repasse en Black
+                               
                                 if (3 < m && m < 8 || 11 < m && m < 16)
                                 {
                                     Console.Write("|");
-                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.ForegroundColor = ConsoleColor.Red;
                                     Console.Write("{0}", symbole[j, m]);
                                     Console.ForegroundColor = ConsoleColor.Black;
                                 }
-                                else Console.Write("|{0}", symbole[j, m]);
+                                else 
+                                {
+                                    Console.Write("|");
+                                    Console.ForegroundColor = ConsoleColor.Blue;                                
+                                    Console.Write("{0}", symbole[j, m]);
+                                    Console.ForegroundColor = ConsoleColor.Black;
+
+                                }
                                 piecePlacee = true; //position k n'est pas vide, on met à jour piecePlacee pour passer à la pièce suivante
                             }
                         }
@@ -162,11 +162,16 @@ namespace Quarto1
                         {
                             if (3 < k && k < 8 || 11 < k && k < 16)
                             {
-                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write("{0}   ", symbole[j, k]);
                                 Console.ForegroundColor = ConsoleColor.Black;
                             }
-                            else Console.Write("{0}   ", symbole[j, k]);
+                            else 
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write("{0}   ", symbole[j, k]);
+                               Console.ForegroundColor = ConsoleColor.Black;
+                            }
                         }
                         else Console.Write("       ");
                     }
