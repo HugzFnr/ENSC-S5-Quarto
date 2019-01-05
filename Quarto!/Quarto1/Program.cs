@@ -187,7 +187,7 @@ namespace Quarto1
 			int victoire = -1;
 			int[] coup = { -1, -1 };
 
-			while (victoire == -1)
+			while (victoire == -1) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
 			{
 				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu, joueurEnCours);
                 else coup = JouerPieceContreJoueur(symbole, code, position, contenu, joueurEnCours);
@@ -199,26 +199,37 @@ namespace Quarto1
 
 			Console.WriteLine("+------+\n|QUARTO|\n+------+");
             
+            //pour pouvoir afficher comment a été fait le quarto
+            string directionQuarto, attributQuarto;
 
-			Console.WriteLine("rangée : {0}\nattribut commun : {1}", coup[0], coup[1]); //à convetir en truc lisible
+            if (coup[0]==0) directionQuarto = "horizontale";
+            else if (coup[0]==1) directionQuarto = "verticale";
+            else directionQuarto="diagonale";
+
+            if (coup[1]==0) attributQuarto = "taille";
+            else if (coup[1]==1) attributQuarto = "couleur";
+            else if (coup[1]==2) attributQuarto = "géométrie";
+            else attributQuarto = "relief";
+
+			Console.WriteLine("Direction : {0}\nAttribut commun : {1}", directionQuarto, attributQuarto); //à convetir en truc lisible
                         
             string adversaire;
             if (modeJeu=="F") adversaire = " contre l'IA en mode facile";
             else {
-               if (modeJeu=="D")  adversaire = "contre l'IA en mode difficile"; 
-               else  adversaire = "contre le Joueur 2"; 
+               if (modeJeu=="D")  adversaire = " contre l'IA en mode difficile"; 
+               else  adversaire = " contre le Joueur 2"; 
                     } 
             
             if (joueurEnCours == 0) {
-                if (modeJeu=="F") Console.WriteLine("\n+--------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------+\n");
+                if (modeJeu=="F") Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------------+\n");
                 else {
-                    if (modeJeu=="D")  Console.WriteLine("\n+--------------------------------+\n|Victoire de l'IA mode difficile contre le Joueur 1|\n+--------------------------------+\n"); 
-                     else Console.WriteLine("\n+--------------------------------+\n|Victoire du Joueur 2 contre le Joueur 1 |\n+--------------------------------+\n"); 
+                    if (modeJeu=="D")  Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode difficile contre le Joueur 1|\n+--------------------------------------+\n"); 
+                     else Console.WriteLine("\n+--------------------------------------+\n|Victoire du Joueur 2 contre le Joueur 1 |\n+--------------------------------------+\n"); 
                     }
                 }
-            else Console.WriteLine("\n+------------------------------------+\n|Victoire du Joueur 1" + adversaire +" |\n+-----------------------------------+\n"); 
+            else Console.WriteLine("\n+-----------------------------------------+\n|Victoire du Joueur 1" + adversaire +" |\n+-----------------------------------------+\n"); 
 
-            adversaire = Console.ReadLine();
+            string fin = Console.ReadLine(); //pour pouvoir voir l'écran de victoire sinon la console se ferme
 
         }
                 
