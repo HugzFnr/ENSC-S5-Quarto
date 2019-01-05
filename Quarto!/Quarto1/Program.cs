@@ -199,7 +199,7 @@ namespace Quarto1
 
 			Console.WriteLine("+------+\n|QUARTO|\n+------+");
             
-            //pour pouvoir afficher comment a été fait le quarto
+            //pour pouvoir afficher comment a été fait le quarto, on utilise le fonctionnement de la fonction GagnerPartie ci-dessous
             string directionQuarto, attributQuarto;
 
             if (coup[0]==0) directionQuarto = "horizontale";
@@ -211,7 +211,7 @@ namespace Quarto1
             else if (coup[1]==2) attributQuarto = "géométrie";
             else attributQuarto = "relief";
 
-			Console.WriteLine("Direction : {0}\nAttribut commun : {1}", directionQuarto, attributQuarto); //à convetir en truc lisible
+			Console.WriteLine("Direction : {0}\nAttribut commun : {1}", directionQuarto, attributQuarto);
                         
             string adversaire;
             if (modeJeu=="F") adversaire = " contre l'IA en mode facile";
