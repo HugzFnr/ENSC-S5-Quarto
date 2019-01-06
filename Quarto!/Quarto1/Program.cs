@@ -191,8 +191,8 @@ namespace Quarto1
 
 			while (victoire == -1 && compteurTours<=17) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
 			{
-				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu,joueurEnCours,chemin,compteurTours);
-                else coup = JouerPieceContreJoueur(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,coup[2],coup[3]); //le passage par référence est utile pour savoir quel joueur a correctement réclamé le quarto
+				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,modeJeu,coup[2],coup[3]); //le passage par référence est utile pour savoir quel joueur a correctement réclamé le quarto
+                else coup = JouerPieceContreJoueur(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,coup[2],coup[3]); //pour le compteur, il est re-calculé lors de la lecture sauvegarde
 				victoire = coup[0];
                 compteurTours++;
 			}
@@ -248,59 +248,75 @@ namespace Quarto1
         
         }
                 
-		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu,int joueur, string chemin, int compteur)
+		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu,ref int joueur, string chemin, int compteur,string modeJeu,int piecePrec, int casePrec)
         {
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
-
-
+            
             //d'abord on choisit quelle pièce il faut placer
-            int piece;
-            if (joueur == 0) 
+            int piece=piecePrec;
+            int rangCase=casePrec;
+            string requete;
+            int[] sauvegarde = {-2, -2, -2, -2};
+            bool partieFinie=false;
+            if (compteur>=17) partieFinie = true;
+
+            if (joueur == 0 && !partieFinie) 
             { //c'est le tour de l'IA, c'est elle qui choisit une piece à jouer
-                piece = ChoisirPieceIA(position, contenu, code); //une pièce entre 0 et 15
+                piece = ChoisirPieceIA(position, contenu, code,modeJeu); //une pièce entre 0 et 15
                 Console.WriteLine("L'IA vous donne la piece {0}.", piece + 1);
                     
             }
             else
             {
-                piece = ChoisirPieceJoueur(position);
-                Console.WriteLine("Vous avez choisi de donner la piece {0} à l'IA", piece+1);
+            if (compteur>4 && piece!=-1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
+                requete=RequeteQuartoOuSauvegarde(true,3);; //ici aussi on est permissifs avec les minuscules
+                if (requete=="S") return sauvegarde;
+                else if (requete=="Q"){
+                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    if (test[0]!=-1) return test; } //on ne renvoie le tableau du Quarto que si il y a bien Quarto, car il ne fait que 2 éléments et la boucle ne pourrait pas continuer
+                }
+
+                if (!partieFinie) {
+                    piece = ChoisirPieceJoueur(position);
+                    Console.WriteLine("Vous avez choisi de donner la piece {0} à l'IA", piece+1); }
+            
             }
-
-            /*
-            if (joueur == 1) //valide le choix de piece
-                piece = ValiderChoix(contenu, position, piece, joueur);
-            */
-
+            
 			//puis on place la pièce
-            int rangCase;
-            if (joueur == 0) 
+            joueur = (joueur + 1) % 2;
+
+            if (joueur == 1 && !partieFinie) 
             { //c'est le tour le l'IA, c'est donc au joueur de choisir où jouer la pièce
+                if (compteur>4 && rangCase!=-1) {
+                    requete=RequeteQuartoOuSauvegarde(false,3);   //ici aussi on est permissifs avec les minuscules
+                    if (requete=="Q") {                     
+                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    if (test[0]!=-1) return test;}
+                }
+                
                 rangCase = ChoisirEmplacementJoueur(contenu);
                 Console.WriteLine("Vous avez choisi de jouer à l'emplacement {0}.", rangCase + 1);
 
             }
-            else
+            else if (!partieFinie)
             {
 				//rangCase = ChoisirEmplacementIA(contenu); //une pièce entre 0 et 15
 
 				//nouvelle version de ChoisirEmplacementIA
-				rangCase = ChoisirEmplacementIA(position, contenu, code, piece);
-				
-
+				rangCase = ChoisirEmplacementIA(position, contenu, code, piece, modeJeu);				
 				Console.WriteLine("L'IA joue à l'emplacement {0}.", rangCase + 1);
             }
-            
-            /*
-            if (joueur == 0) //valide le choix de rangCase
-                rangCase = ValiderChoix(contenu, position, rangCase, joueur);
-            */
 
             position[piece] = rangCase; //on met à jour les tableaux selon le coup joué
             contenu[rangCase] = piece;
+            int[] temp = { -1, -1, piece, rangCase }; 
             
-            return (GagnerPartie(position, contenu, code, piece, rangCase)); //puis on vérifie si il n'y pas QUARTO
+            if (joueur==0) {
+            temp[0]=GagnerPartie(position, contenu, code, piece, rangCase)[0];
+            temp[1]=GagnerPartie(position, contenu, code, piece, rangCase)[1];
+            return temp; } //l'IA réclame directement le Quarto quand elle le pose
+            else return temp;
         }
         
         public static int ValiderChoix(int[] contenu, int[] position, int choix, int joueur) //finalement non utilisé
@@ -346,7 +362,7 @@ namespace Quarto1
             //retourne deux nombres, qui indiquent s'il s'agit d'un quarto en ligne ou colonne ou diagonale avec l'index du quarto dans la rangée. A défaut, retourne {-1,-1}
             //on part de l'endroit où la pièce est posée : dans tous les cas, il faut vérifier la colonne et la ligne pour savoir s'il y a un QUARTO
 			//par défaut, GagnerPartie renvoie {-1,-1} (il n'y a de quarto dans aucune direction ni aucun caractère commun dans une rangée)
-			int[] tabVictoire = { -1, -1 }; //tabVictoire = { direction du quarto, attribut en commun }
+			int[] tabVictoire = { -1, -1}; //tabVictoire = { direction du quarto, attribut en commun }
 
 
 			//détermination de la première case chaque rangée
@@ -533,10 +549,9 @@ namespace Quarto1
             if (compteur>4 && piece!=-1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
                 requete=RequeteQuartoOuSauvegarde(true,joueur);; //ici aussi on est permissifs avec les minuscules
                 if (requete=="S") return sauvegarde;
-                else if (requete=="Q"){
-                    piece=piece;
-                    rangCase=rangCase;
-                    return GagnerPartie(position, contenu, code, piece, rangCase); }
+                else if (requete=="Q") {
+                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    if (test[0]!=-1) return test; }
             }
             if (compteur<17) { //au 17eme tour il n'y a plus de pièce à jouer
                 piece=ChoisirPieceJoueurVsJoueur(position,joueur);
@@ -545,7 +560,9 @@ namespace Quarto1
 
                 if (compteur>4 && rangCase!=-1) {
                     requete=RequeteQuartoOuSauvegarde(false,joueur);   //ici aussi on est permissifs avec les minuscules
-                    if (requete=="Q") return GagnerPartie(position, contenu, code, piece, rangCase);
+                    if (requete=="Q") {                     
+                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    if (test[0]!=-1) return test; }
                 }
             
                 rangCase=ChoisirEmplacementJoueurVsJoueur(contenu,joueur);
@@ -634,7 +651,7 @@ namespace Quarto1
             if (sauvegardePossible) requeteSauvegarde = " Entrez S pour arrêter la partie et la sauvegarder.\n";
             else requeteSauvegarde = "";  //il n'est possible de sauvegarder qu'en début de son tour
 
-            Console.WriteLine("\n" + joueur + "Entrez Q pour réclamer un Quarto posé au tour précédent."+ requeteSauvegarde +"Entrez n'importe quoi d'autre pour continuer le tour");
+            Console.WriteLine("\n" + nomJoueur + " Entrez Q pour réclamer un Quarto posé au tour précédent."+ requeteSauvegarde +"Entrez n'importe quoi d'autre pour continuer le tour");
             string requete = Console.ReadLine().ToUpper();
 
             return requete;
@@ -643,32 +660,36 @@ namespace Quarto1
     //Fonctions de l'IA
 
         //choix IA : pièce à donner
-        public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code)//fonction qui gère les différentes versions de sélection de pièce IA
+        public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code, string modeJeu)//fonction qui gère les différentes versions de sélection de pièce IA
 		{
-            int[] piecesLibres = DeterminerPiecesLibres(contenu);
-            int pieceParfaite = ChoisirPieceParfaite(position, contenu, code);
-            //si on trouve une pièce parfaite, on la donne
-            if (pieceParfaite != -1)
-                return pieceParfaite;
-            else
-            //si on trouve une pièceNonGagnante, on la donne
-			if (ListerPieceNonGagnanteIA(position, contenu, code)[0] != -1)
-            {
-                int[] pieceNonGagnante = ListerPieceNonGagnanteIA(position, contenu, code);
+            if (modeJeu=="F") return ChoisirPieceHasardIA(position); //en mode de difficulté facile, l'IA joue tout au hasard
 
-                Random aleatoire = new Random();
-                int refPieceDonnee = pieceNonGagnante[aleatoire.Next(pieceNonGagnante.Length)]; //nb aléatoire entre 0 et nbCoupsNonGagnants
+            else {
+                int[] piecesLibres = DeterminerPiecesLibres(contenu);
+                int pieceParfaite = ChoisirPieceParfaite(position, contenu, code);
+                //si on trouve une pièce parfaite, on la donne
+                if (pieceParfaite != -1)
+                    return pieceParfaite;
+                else
+                //si on trouve une pièceNonGagnante, on la donne
+			    if (ListerPieceNonGagnanteIA(position, contenu, code)[0] != -1)
+                {
+                    int[] pieceNonGagnante = ListerPieceNonGagnanteIA(position, contenu, code);
 
-                //on choisit un coup non gagnant au hasard parmi ceux disponibles
-                return pieceNonGagnante[refPieceDonnee];
+                    Random aleatoire = new Random();
+                    int refPieceDonnee = pieceNonGagnante[aleatoire.Next(pieceNonGagnante.Length)]; //nb aléatoire entre 0 et nbCoupsNonGagnants
+
+                    //on choisit un coup non gagnant au hasard parmi ceux disponibles
+                    return pieceNonGagnante[refPieceDonnee];                                        //SOUCIS D'OUT OF RANGE LA DESSUS
+                }
+                //sinon, on a forcément perdu et on choisit donc une pièce au hasard
+                else 
+                    return ChoisirPieceHasardIA(position);
             }
-            //sinon, on a forcément perdu et on choisit donc une pièce au hasard
-            else 
-                return ChoisirPieceHasardIA(position);
 
         }
         		
-        public static int ChoisirPieceHasardIA(int[] position)//version qui renvoit une pièce prise au hasard parmi celles disponibles 
+        public static int ChoisirPieceHasardIA(int[] position)//version qui renvoie une pièce prise au hasard parmi celles disponibles 
         {			
             Random aleatoire = new Random();
             int rangPiece = aleatoire.Next(16); //nb aléatoire entre 0 et 15
@@ -743,37 +764,41 @@ namespace Quarto1
         }
 
         //choix IA : emplacement
-        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee)//fonction qui gère les différentes versions de sélection de case IA
+        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu)//fonction qui gère les différentes versions de sélection de case IA
         {
-            //si on trouve un coup gagnant, on le joue            
-            if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee) != -1)
-            {
-                Console.WriteLine("emplacement gagnant trouvé");
-                return ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee);
-            }
-            else
-            //si on trouve un coup parfait, on le joue
-            if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee) != -1)
-            {
-                Console.WriteLine("emplacement parfait trouvé");
-                return ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
-            }
-            else
-            //sinon on joue un bon coup
-            {
-                int[] bonEmplacement = ChoisirBonEmplacement(position, contenu, code, pieceDonnee);
-                if (bonEmplacement[0] != -1)
+            if (modeJeu=="F" || pieceDonnee==-1) return ChoisirEmplacementHasardIA(contenu); //en mode facile, en reprenant une sauvegarde ou au premier tour, l'IA place au hasard
+
+            else {
+                //si on trouve un coup gagnant, on le joue            
+                if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee) != -1)
                 {
-                    Random aleatoire = new Random();
-                    int emplacement = bonEmplacement[aleatoire.Next(bonEmplacement.Length)];
-                    Console.WriteLine("bon emplacement trouvé");
-                    return emplacement;
+                    Console.WriteLine("emplacement gagnant trouvé");
+                    return ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee);
                 }
-                //s'il n'y a ni coup gagnant, ni coup parfait, ni bon coup, on joue au hasard puisqu'on a forcément perdu 
                 else
+                //si on trouve un coup parfait, on le joue
+                if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee) != -1)
                 {
-                    Console.WriteLine("pas de bon coup - ChoisirEmplacementIA");
-                    return ChoisirEmplacementHasardIA(contenu);
+                    Console.WriteLine("emplacement parfait trouvé");
+                    return ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
+                }
+                else
+                //sinon on joue un bon coup
+                {
+                    int[] bonEmplacement = ChoisirBonEmplacement(position, contenu, code, pieceDonnee);
+                    if (bonEmplacement[0] != -1)
+                    {
+                        Random aleatoire = new Random();
+                        int emplacement = bonEmplacement[aleatoire.Next(bonEmplacement.Length)];
+                        Console.WriteLine("bon emplacement trouvé");
+                        return emplacement;
+                    }
+                    //s'il n'y a ni coup gagnant, ni coup parfait, ni bon coup, on joue au hasard puisqu'on a forcément perdu 
+                    else
+                    {
+                        Console.WriteLine("pas de bon coup - ChoisirEmplacementIA");
+                        return ChoisirEmplacementHasardIA(contenu);
+                    }
                 }
             }
         }
@@ -1089,7 +1114,7 @@ namespace Quarto1
                 {
                     position[int.Parse(ligne)] = iter;
                    contenu[iter] = int.Parse(ligne);
-                    compteur++;
+                    compteur++; //chaque pièce jouée = un tour qui a été joué
                 }
                 else
                 {
