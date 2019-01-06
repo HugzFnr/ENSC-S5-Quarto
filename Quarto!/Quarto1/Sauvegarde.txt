@@ -1,17 +1,19 @@
-13
-6
-4
-1
-7
--1
--1
-12
-2
--1
--1
--1
-10
-15
 0
+1
+2
 3
-STOP -- Au-dessus se situe la 16�me ligne
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+-1
+-1
+STOP -- Au-dessus de cette ligne est écrite la 16ème pièce. En-dessous sont écrits le mode de jeu et le joueur dont c'était le tour
+J
+0

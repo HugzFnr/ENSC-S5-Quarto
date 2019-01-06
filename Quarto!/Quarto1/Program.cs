@@ -25,7 +25,7 @@ namespace Quarto1
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
 
-            string[] codePiece = new string[]
+            string[] codePiece = new string[]  //le code des pièces et de leurs attributs, cf Justif. techniques
             {
                 "PNRV","PNRE","PNCV","PNCE",
                 "PBRV","PBRE","PBCV","PBCE",
@@ -33,7 +33,7 @@ namespace Quarto1
                 "GBRV","GBRE","GBCV","GBCE"
             };
 
-            string[,] symbolePiece = new string[,]
+            string[,] symbolePiece = new string[,] //tableau en deux lignes pour pouvoir représenter les grandes pièces
             {
                { "    ", "    ", "    ", "    ", "    ", "    ", "    ", "    ", "(  )","(())","[  ]","[[]]","(  )","(())","[  ]","[[]]" },
                { "(  )", "(())", "[  ]", "[[]]", "(  )", "(())", "[  ]", "[[]]", "(  )","(())","[  ]","[[]]","(  )","(())","[  ]","[[]]" }
@@ -51,9 +51,11 @@ namespace Quarto1
             //patie classique
             positionPiece = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
             contenuCase = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-            
-            string modeJeu="F";  //initialisation temporaire, il faut l'intégrer à la lecture sauvegarde
+
+            //initialisation temporaire pour permettre la lecture de la sauvegarde, ces paramètres ne sont pas utilisées
+            string modeJeu="F";  
             bool nouvellePartie=true;
+            int compteurTours=1;
             
             //dans le code l'entier 1 représente le joueur 1, et l'entier 0 l'IA ou le joueur 2
             Random r = new Random();
@@ -63,9 +65,9 @@ namespace Quarto1
             if (SauvegardeValide(cheminFinal)) {
                 string rep;
                 do {
-                Console.WriteLine("Une sauvegarde valide a été détectée. Entrez O pour la charger \nou N pour lancer une nouvelle partie (et écraser la partie sauvegardée).");
+                Console.WriteLine("Une sauvegarde valide a été détectée. Entrez O pour la charger ou N pour lancer \nune nouvelle partie (une nouvelle sauvegarde écrasera la partie sauvegardée).");
                 rep = Console.ReadLine().ToUpper(); //accepte les lettres demandées en minuscule également
-                if (rep=="O") { LireSauvegarde(positionPiece, contenuCase, cheminFinal);
+                if (rep=="O") { LireSauvegarde(positionPiece, contenuCase, cheminFinal, ref modeJeu, ref premierJoueur, ref compteurTours);
                                 nouvellePartie=false;
                             }
                   
@@ -78,7 +80,7 @@ namespace Quarto1
                 } while (!(modeJeu=="F" || modeJeu=="D" || modeJeu =="J")); 
                 }
 
-            DeroulerPartie(symbolePiece, codePiece, positionPiece, contenuCase, premierJoueur,modeJeu);
+            DeroulerPartie(symbolePiece, codePiece, positionPiece, contenuCase, premierJoueur,modeJeu,cheminFinal,compteurTours);
 
             //int[] listePiecesNonGagnantes = ListerPieceNonGagnanteIA(positionPiece, contenuCase, codePiece);
             /*
@@ -180,60 +182,73 @@ namespace Quarto1
         }
 
         //Boucle principale du déroulement de la partie
-        public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int premierJoueur, string modeJeu)
+        public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int premierJoueur, string modeJeu, string chemin,int compteurTours)
 		{
-			int joueurEnCours = premierJoueur;
+			int joueurEnCours = premierJoueur; //To do : intégrer le quarto et la sauvegarde à la boucle de jeu + sauvegarder le tour et les params
 
 			int victoire = -1;
-			int[] coup = { -1, -1 };
+			int[] coup = { -1, -1 , -1, -1}; //Les deux premiers chiffres restent à -1 tant qu'il n'y a pas de Quarto déclaré tandisque les 2 derniers permettent d'enregistrer le coup précédent
 
-			while (victoire == -1) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
+			while (victoire == -1 && compteurTours<=17) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
 			{
-				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu, joueurEnCours);
-                else coup = JouerPieceContreJoueur(symbole, code, position, contenu, joueurEnCours);
+				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu,joueurEnCours,chemin,compteurTours);
+                else coup = JouerPieceContreJoueur(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,coup[2],coup[3]); //le passage par référence est utile pour savoir quel joueur a correctement réclamé le quarto
 				victoire = coup[0];
-				joueurEnCours = (joueurEnCours + 1) % 2; //passe astucieusement le tour à l'autre joueur
+                compteurTours++;
 			}
 
-			AfficherPlateau(symbole, position);
-
-			Console.WriteLine("+------+\n|QUARTO|\n+------+");
-            
-            //pour pouvoir afficher comment a été fait le quarto, on utilise le fonctionnement de la fonction GagnerPartie ci-dessous
-            string directionQuarto, attributQuarto;
-
-            if (coup[0]==0) directionQuarto = "horizontale";
-            else if (coup[0]==1) directionQuarto = "verticale";
-            else directionQuarto="diagonale";
-
-            if (coup[1]==0) attributQuarto = "taille";
-            else if (coup[1]==1) attributQuarto = "couleur";
-            else if (coup[1]==2) attributQuarto = "géométrie";
-            else attributQuarto = "relief";
-
-			Console.WriteLine("Direction : {0}\nAttribut commun : {1}", directionQuarto, attributQuarto);
-                        
-            string adversaire;
-            if (modeJeu=="F") adversaire = " contre l'IA en mode facile";
-            else {
-               if (modeJeu=="D")  adversaire = " contre l'IA en mode difficile"; 
-               else  adversaire = " contre le Joueur 2"; 
-                    } 
-            
-            if (joueurEnCours == 0) {
-                if (modeJeu=="F") Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------------+\n");
-                else {
-                    if (modeJeu=="D")  Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode difficile contre le Joueur 1|\n+--------------------------------------+\n"); 
-                     else Console.WriteLine("\n+--------------------------------------+\n|Victoire du Joueur 2 contre le Joueur 1 |\n+--------------------------------------+\n"); 
-                    }
+            if (victoire==-2) {
+                SauvegarderPartie(contenu,chemin, joueurEnCours, modeJeu);
                 }
-            else Console.WriteLine("\n+-----------------------------------------+\n|Victoire du Joueur 1" + adversaire +" |\n+-----------------------------------------+\n"); 
 
-            string fin = Console.ReadLine(); //pour pouvoir voir l'écran de victoire sinon la console se ferme
+            else if (compteurTours==18 && victoire==-1) {  //après la pose de la dernière pièce, on demande s'il y a Quarto puis on termine la partie
 
+                Console.WriteLine("Il n'y a plus de pièces à poser : c'est une égalité !");
+                string egalite = Console.ReadLine(); //pour pouvoir voir l'écran d'égalité sinon la console se ferme
+                }
+            
+            else { //si la boucle a été interrompue ni par demande de sauvegarde ni par épuisement des pièces (tour 17), c'est qu'il y a eu une Victoire
+			    AfficherPlateau(symbole, position);
+
+			    Console.WriteLine("+------+\n|QUARTO|\n+------+");
+            
+                //pour pouvoir afficher comment a été fait le quarto, on utilise le fonctionnement de la fonction GagnerPartie ci-dessous
+                string directionQuarto, attributQuarto;
+
+                if (coup[0]==0) directionQuarto = "horizontale";
+                else if (coup[0]==1) directionQuarto = "verticale";
+                else directionQuarto="diagonale";
+
+                if (coup[1]==0) attributQuarto = "taille";
+                else if (coup[1]==1) attributQuarto = "couleur";
+                else if (coup[1]==2) attributQuarto = "géométrie";
+                else attributQuarto = "relief";
+
+			    Console.WriteLine("Direction : {0}\nAttribut commun : {1}", directionQuarto, attributQuarto);
+                        
+                string adversaire;
+                if (modeJeu=="F") adversaire = " contre l'IA en mode facile";
+                else {
+                   if (modeJeu=="D")  adversaire = " contre l'IA en mode difficile"; 
+                   else  adversaire = " contre le Joueur 2"; 
+                        } 
+            
+                if (joueurEnCours == 0) {
+                    if (modeJeu=="F") Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------------+\n");
+                    else {
+                        if (modeJeu=="D")  Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode difficile contre le Joueur 1|\n+--------------------------------------+\n"); 
+                         else Console.WriteLine("\n+--------------------------------------+\n|Victoire du Joueur 2 contre le Joueur 1 |\n+--------------------------------------+\n"); 
+                        }
+                    }
+                else Console.WriteLine("\n+-----------------------------------------+\n|Victoire du Joueur 1" + adversaire +" |\n+-----------------------------------------+\n"); 
+
+                string fin = Console.ReadLine(); //pour pouvoir voir l'écran de victoire sinon la console se ferme
+
+                }
+        
         }
                 
-		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu, int joueur)
+		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu,int joueur, string chemin, int compteur)
         {
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
@@ -441,7 +456,8 @@ namespace Quarto1
         }
 		
 
-        //choix joueur contre IA
+    //choix joueur contre IA
+
         public static int ChoisirPieceJoueur(int[] position) //le joueur choisit la pièce qu'il veut faire jouer à l'IA
         {
             int rangPiece = DemanderEtConvertirEnNombreEntreeJoueur("Quelle pièce voulez-vous faire jouer à l'IA ?") - 1;
@@ -503,22 +519,43 @@ namespace Quarto1
 
     //choix joueur contre un autre joueur
 
-		public static int[] JouerPieceContreJoueur(string[,] symbole, string[] code, int[] position, int[] contenu, int joueur)
+		public static int[] JouerPieceContreJoueur(string[,] symbole, string[] code, int[] position, int[] contenu, ref int joueur, string chemin, int compteur, int piecePrec, int casePrec)
         {
-            int piece;
-            int rangCase;
+
+            int piece=piecePrec; 
+            int rangCase=casePrec; //elles doivent être initialisées pour les utiliser dans les requêtes de quarto
+            string requete;
+            int[] sauvegarde = {-2, -2, -2, -2};
 
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
 
-            piece=ChoisirPieceJoueurVsJoueur(position,joueur);
-            
-            rangCase=ChoisirEmplacementJoueurVsJoueur(contenu,joueur);
+            if (compteur>4 && piece!=-1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
+                requete=RequeteQuartoOuSauvegarde(true,joueur);; //ici aussi on est permissifs avec les minuscules
+                if (requete=="S") return sauvegarde;
+                else if (requete=="Q"){
+                    piece=piece;
+                    rangCase=rangCase;
+                    return GagnerPartie(position, contenu, code, piece, rangCase); }
+            }
+            if (compteur<17) { //au 17eme tour il n'y a plus de pièce à jouer
+                piece=ChoisirPieceJoueurVsJoueur(position,joueur);
 
-            position[piece] = rangCase;
-            contenu[rangCase] = piece;
+                joueur = (joueur + 1) % 2; //c'est le joueur à qui ce n'est pas le tour qui place la pièce
+
+                if (compteur>4 && rangCase!=-1) {
+                    requete=RequeteQuartoOuSauvegarde(false,joueur);   //ici aussi on est permissifs avec les minuscules
+                    if (requete=="Q") return GagnerPartie(position, contenu, code, piece, rangCase);
+                }
             
-            return (GagnerPartie(position, contenu, code, piece, rangCase));
+                rangCase=ChoisirEmplacementJoueurVsJoueur(contenu,joueur);
+
+                position[piece] = rangCase;
+                contenu[rangCase] = piece;
+            }
+
+            int[] temp = { -1, -1, piece, rangCase };            
+            return temp; //la partie n'est pas gagnée si le quarto n'est pas déclaré
             
         }
 
@@ -555,8 +592,8 @@ namespace Quarto1
 
         public static int ChoisirEmplacementJoueurVsJoueur(int[] tabContenu, int joueur)
        {
-            joueur = (joueur + 1) % 2; //c'est le joueur à qui ce n'est pas le tour qui place la pièce
-            if (joueur==0) joueur=2;
+
+            if (joueur==0) joueur=2; //le joueur 0 dans notre code est appelé Joueur 2
 
             Console.WriteLine(""); //saut de ligne pour différencier les 2 joueurs           
             int rangCase=DemanderEtConvertirEnNombreEntreeJoueur("Joueur " + joueur + ", où voulez-vous placer la pièce?") -1;
@@ -587,6 +624,21 @@ namespace Quarto1
 
        }
 
+        public static string RequeteQuartoOuSauvegarde (bool sauvegardePossible, int joueur)
+        {
+            if (joueur==0) joueur=2;
+            string nomJoueur = "Joueur " + joueur;
+            if (joueur==3) nomJoueur =""; //contre l'IA on ne précise pas le nom du joueur
+            
+            string requeteSauvegarde;
+            if (sauvegardePossible) requeteSauvegarde = " Entrez S pour arrêter la partie et la sauvegarder.\n";
+            else requeteSauvegarde = "";  //il n'est possible de sauvegarder qu'en début de son tour
+
+            Console.WriteLine("\n" + joueur + "Entrez Q pour réclamer un Quarto posé au tour précédent."+ requeteSauvegarde +"Entrez n'importe quoi d'autre pour continuer le tour");
+            string requete = Console.ReadLine().ToUpper();
+
+            return requete;
+        }
 
     //Fonctions de l'IA
 
@@ -799,7 +851,7 @@ namespace Quarto1
             return (-1);
         }
 
-        public static int[] ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)//renvoit tous les emplacement qui permettent d'avoir des pièces non gagnantes à donner au prochain tour
+        public static int[] ChoisirBonEmplacement(int[] position, int[] contenu, string[] code, int piece)//renvoie tous les emplacement qui permettent d'avoir des pièces non gagnantes à donner au prochain tour
         {
             int[] piecesLibres = DeterminerPiecesLibres(position);
             int[] casesLibres = DeterminerCasesLibres(contenu);
@@ -963,9 +1015,9 @@ namespace Quarto1
 
      //Sauvegarde
 
-        public static void SauvegarderPartie(int[] contenu, string[] pieces, string chemin)
+        public static void SauvegarderPartie(int[] contenu, string chemin, int joueur, string modeJeu)
 		{
-			string[] lignes = new string[16];
+			string[] lignes = new string[19];
 
 			for (int iter = 0; iter <= 15; iter++)
 			{
@@ -973,14 +1025,18 @@ namespace Quarto1
                 lignes[iter] = k.ToString();
 
             }
+            lignes[16] = "STOP -- Au-dessus de cette ligne est écrite la 16ème pièce. En-dessous sont écrits le mode de jeu et le joueur dont c'était le tour";
+            lignes[17] = modeJeu;
+            lignes[18] = joueur.ToString();
+            
             File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : intégrer l'option à la boucle de jeu + prendre en compte le tour en cours, la diff et l'IA
         }
 
-        public static bool SauvegardeValide(string chemin) //une sauvegarde est valide lorsque ses 16 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
-        {                                                  // et lorsque chaque pièce n'est écrite qu'une fois
+        public static bool SauvegardeValide(string chemin) //lit le fichier Sauvegarde.txt pour vérifier sa validité
+        {                                                  
             string ligne;
-            bool sauvegardeValide = true;
-
+            bool sauvegardeValide = true; //une sauvegarde est valide lorsque ses 16 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
+            // et lorsque chaque pièce n'est écrite qu'une fois
             int nombreTeste;
             int iter = 0;
             bool [] emplacementPris = new bool [16]; //par défaut, aucun emplacement n'est utilisé
@@ -1003,20 +1059,26 @@ namespace Quarto1
                     } 
                 }
                 else return sauvegardeValide = false;
-
-
+                
                 iter++;
 
             }
+            fichier.ReadLine(); //on passe la ligne informative
+            ligne = fichier.ReadLine();
+            if (!(ligne=="D" ||ligne =="F" || ligne =="J")) return sauvegardeValide = false; //on vérifie la ligne du mode de jeu
+            
+            ligne = fichier.ReadLine();
+            if (!(ligne=="0" || ligne=="1")) return sauvegardeValide=false; //on vérifie la dernière ligne, qui indique le code du joueur dont c'était le tour
+
             fichier.Close();
 
             return sauvegardeValide = true; //si la fonction tourne encore c'est que les 16 premières lignes sont valides
         }
-
-
-        public static void LireSauvegarde(int[] position, int[] contenu, string chemin)
+        
+        public static void LireSauvegarde(int[] position, int[] contenu, string chemin, ref string modeJeu, ref int joueur, ref int compteur)
         {
             string ligne;
+
 
             int iter = 0;
             StreamReader fichier = new StreamReader(chemin);
@@ -1027,6 +1089,7 @@ namespace Quarto1
                 {
                     position[int.Parse(ligne)] = iter;
                    contenu[iter] = int.Parse(ligne);
+                    compteur++;
                 }
                 else
                 {
@@ -1034,6 +1097,11 @@ namespace Quarto1
                 }
                 iter++;
             }
+            
+            ligne = fichier.ReadLine();
+            modeJeu = fichier.ReadLine();
+            joueur = int.Parse(fichier.ReadLine());
+
             fichier.Close();
 
         }
@@ -1092,7 +1160,7 @@ namespace Quarto1
             return (nombre);
         }
 
-        public static int[] DeterminerPiecesLibres(int[] position)//renvoit un tableau avec les rangs de toutes les pièces disponibles
+        public static int[] DeterminerPiecesLibres(int[] position)//renvoie un tableau avec les rangs de toutes les pièces disponibles
         {
             //on répertorie les pièces disponibles
             int compteur = 0;
