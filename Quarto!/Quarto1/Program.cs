@@ -181,7 +181,7 @@ namespace Quarto1
             Console.WriteLine("                             ");
         }
 
-        //Boucle principale du déroulement de la partie
+        /// <summary> Boucle principale du déroulement de la partie </summary>
         public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int premierJoueur, string modeJeu, string chemin,int compteurTours)
 		{
 			int joueurEnCours = premierJoueur; //To do : intégrer le quarto et la sauvegarde à la boucle de jeu + sauvegarder le tour et les params
