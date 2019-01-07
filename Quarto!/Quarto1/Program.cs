@@ -101,6 +101,8 @@ namespace Quarto1
             for (int i = 0; i < listePiecesNonGagnantes.Length; i++)
                 Console.WriteLine("piece non gagnante {0} : {1}",i,listePiecesNonGagnantes[i]+1);
             */
+
+            Console.ReadLine();
         }
 
         //Interface Graphique
@@ -189,13 +191,20 @@ namespace Quarto1
 			int joueurEnCours = premierJoueur;
 
 			int victoire = -1;
+            bool egalite = false;
 			int[] coup = { -1, -1 };
 
-			while (victoire == -1)
-			{
+			while (victoire == -1 && !egalite)
+			{                
 				coup = JouerPiece(symbole, code, position, contenu, joueurEnCours);
 				victoire = coup[0];
 				joueurEnCours = (joueurEnCours + 1) % 2;
+                if(DeterminerPiecesLibres(position)[0] == -1)
+                {
+                    Console.WriteLine("\n+-------+\n|EGALITE|\n+-------+\n");
+                }
+
+
 			}
 
 			AfficherPlateau(symbole, position);
@@ -483,22 +492,29 @@ namespace Quarto1
             int pieceParfaite = ChoisirPieceParfaite(position, contenu, code);
             //si on trouve une pièce parfaite, on la donne
             if (pieceParfaite != -1)
+            {
+                Console.WriteLine("pièce parfaite trouvée - ChoisirPieceIA");
                 return pieceParfaite;
+            }
             else
             //si on trouve une pièceNonGagnante, on la donne
-			if (ListerPieceNonGagnanteIA(position, contenu, code)[0] != -1)
+            if (ListerPieceNonGagnanteIA(position, contenu, code)[0] != -1)
             {
                 int[] pieceNonGagnante = ListerPieceNonGagnanteIA(position, contenu, code);
 
                 Random aleatoire = new Random();
-                int refPieceDonnee = pieceNonGagnante[aleatoire.Next(pieceNonGagnante.Length)]; //nb aléatoire entre 0 et nbCoupsNonGagnants
+                int rangPieceDonnee = aleatoire.Next(pieceNonGagnante.Length); //nb aléatoire entre 0 et nbCoupsNonGagnants
 
+                Console.WriteLine("pièce non gagnante trouvée - ChoisirPieceIA");
                 //on choisit un coup non gagnant au hasard parmi ceux disponibles
-                return pieceNonGagnante[refPieceDonnee];
+                return pieceNonGagnante[rangPieceDonnee];
             }
             //sinon, on a forcément perdu et on choisit donc une pièce au hasard
-            else 
+            else
+            {
+                Console.WriteLine("pièce choisie au hasard - ChoisirPieceIA");
                 return ChoisirPieceHasardIA(position);
+            }
 
         }
         		
@@ -587,10 +603,16 @@ namespace Quarto1
             }
             else
             //si on trouve un coup parfait, on le joue
-            if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee) != -1)
+            if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee)[0] != -1)
             {
                 Console.WriteLine("emplacement parfait trouvé");
-                return ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
+
+                int[] emplacementsParfaits = ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
+
+                Random aleatoire = new Random();
+                int emplacementChoisi = emplacementsParfaits[aleatoire.Next(emplacementsParfaits.Length)];
+
+                return emplacementChoisi;
             }
             else
             //sinon on joue un bon coup
@@ -751,7 +773,7 @@ namespace Quarto1
 
 
         //en cours ...
-        public static int ChoisirEmplacementParfait(int[] position, int[] contenu, string[] code, int piece)
+        public static int[] ChoisirEmplacementParfait(int[] position, int[] contenu, string[] code, int piece)
         {
             //l'emplacement est parfait si on trouve une piece pour laquelle le joueur n'a aucun bon emplacement où la jouer
 
@@ -761,7 +783,13 @@ namespace Quarto1
             //on crée des copies des tableaux contenu et position pour ne pas les modifier dans la phase de prédictions
             int[] copiePosition = new int[16];
             int[] copieContenu = new int[16];
-            
+
+            int[] emplacementsParfaits = new int[casesLibres.Length];
+            for (int i = 0; i < casesLibres.Length; i++)
+                emplacementsParfaits[i] = -1;
+
+            int number = 0;
+
             //pour chaque emplacement...
             foreach (int i in casesLibres)
             {
@@ -782,68 +810,36 @@ namespace Quarto1
 
                     //... qui n'a aucun bon emplacement
                     if (ChoisirBonEmplacement(copiePosition, copieContenu, code, j)[0] == -1)
-                        return (i);
-                }
-            }
-            return -1;         
-            
-
-            /*
-            //on vérifie que si le coup est non gagnant pour le joueur
-            int[] coupsNonGagnants = ListerPieceNonGagnanteIA(position, contenu, code);
-            //foreach (int i in coupsNonGagnants)
-                //Console.WriteLine("contenu de coups non gagnants : {0} - commentaire dans coupParfait", i);
-
-            //a priori le coup n'est pas bon
-            bool coupOk = false;
-            foreach (int i in coupsNonGagnants)
-                //si piece figure parmi les coups non gagnants, on peut la jouer
-                if (i == piece) coupOk = true;
-
-            //Console.WriteLine("presence de la piece {0} dans les coups non gagnants : {1} - commentaire dans coupParfait", piece, coupOk);
-
-            //si le coup ne fait pas perdre l'IA au prochain tour, il peut être parfait 
-            if (coupOk)
-            {
-                int[] piecesLibres = DeterminerPiecesLibres(position);
-                int[] casesLibres = DeterminerCasesLibres(contenu);
-
-                int[] copiePosition = new int[16];
-                int[] copieContenu = new int[16];
-
-                //quelle que soit la case où jouera l'humain
-                for (int i = 0; i < casesLibres.Length; i++)
-                {
-                    //et quelle que soit la piece qu'il choisira de donner à l'IA
-                    for (int j = 0; j < piecesLibres.Length; j++)
                     {
-                        //on copie position et contenu
-                        for(int k = 0; k<position.Length;k++)
-                        {
-                            copiePosition[k] = position[k];
-                            copieContenu[k] = contenu[k];
-                        }
-
-                        //n° des pièces libres
-                        copiePosition[piecesLibres[j]] = casesLibres[i];
-
-                        //n° des cases libres
-                        copieContenu[casesLibres[i]] = piecesLibres[j];
-
-                        //on trouvera un coup gagnant
-                        if (ChoisirEmplacementCoupGagnantIA(copiePosition, copieContenu, code, j) == -1)
-                            //si ce n'est pas le cas, le coup n'est pas parfait                            
-                            return false;
+                        emplacementsParfaits[number] = i;
+                        number++;
                     }
                 }
-                //Console.WriteLine("coup parfait détecté - commentaire dans CoupParfait");              
-                return true;
             }
-            //si le coup peut fait perdre l'IA au prochain tour, il n'est pas parfait
+
+            int count = 0;
+            foreach (int i in emplacementsParfaits)
+                if (i != -1)
+                    count++;
+
+            if (count != 0)
+            {
+                int[] listeEmplacementsParfaits = new int[count];
+                int j = 0;
+                foreach (int i in emplacementsParfaits)
+                    if (i != -1)
+                    {
+                        listeEmplacementsParfaits[j] = i;
+                        j++;
+                    }
+                return listeEmplacementsParfaits;
+            }
             else
-                return false;
-            */
-                
+            {
+                int[] listeEmplacementsParfaits = { -1 };
+                return listeEmplacementsParfaits;
+            }
+            
         }
         
 
@@ -968,19 +964,27 @@ namespace Quarto1
                 if (position[i] == -1)
                     compteur++;
 
-            //création et remplissage d'un tableau qui répertorie les pièces libres
-            int[] piecesLibres = new int[compteur];
-            int k = 0;
-            for (int i = 0; i < 16; i++)
+            if (compteur != 0)
             {
-                //on associe à chaque case de piecesLibres le rang de la pièces disponible
-                if (position[i] == -1)
+                //création et remplissage d'un tableau qui répertorie les pièces libres
+                int[] piecesLibres = new int[compteur];
+                int k = 0;
+                for (int i = 0; i < 16; i++)
                 {
-                    piecesLibres[k] = i;
-                    k++;
+                    //on associe à chaque case de piecesLibres le rang de la pièces disponible
+                    if (position[i] == -1)
+                    {
+                        piecesLibres[k] = i;
+                        k++;
+                    }
                 }
+                return piecesLibres;
             }
-            return piecesLibres;
+            else
+            {
+                int[] piecesLibres = { -1 };
+                return piecesLibres;
+            }
         }
         /// ON POURRAIT SCINDER CES DEUX FONCTIONS EN UNE SEULE (DETERMINER ...) AVEC UN INDICE 0 POUR LES PIECES ET 1 POUR LES CASES
         public static int[] DeterminerCasesLibres(int[] contenu)//renvoit un tableau avec les rangs de toutes les pièces disponibles
