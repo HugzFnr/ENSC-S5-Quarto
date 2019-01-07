@@ -776,6 +776,7 @@ namespace Quarto1
         }
 
         //choix IA : emplacement
+        //A FAIRE : METTRE UNE LIMITE BASSE POUR LA RECHERCHE DE EMPLACEMENT PARFAIT, SINON DUREE DE RECHERCHE TROP LONGUE
         public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu)//fonction qui gère les différentes versions de sélection de case IA
         {
             if (modeJeu == "F" || pieceDonnee == -1) return ChoisirEmplacementHasardIA(contenu); //en mode facile, en reprenant une sauvegarde ou au premier tour, l'IA place au hasard
