@@ -55,19 +55,20 @@ namespace Quarto1
             //initialisation temporaire pour permettre la lecture de la sauvegarde, ces paramètres ne sont pas utilisées
             string modeJeu="F";  
             bool nouvellePartie=true;
-            int compteurTours=1;
             
-            //dans le code l'entier 1 représente le joueur 1, et l'entier 0 l'IA ou le joueur 2
+
             Random r = new Random();
-            int premierJoueur = r.Next(2); // 1 chance sur 2 d'être le premier joueur
+            //dans le code l'entier 1 représente le joueur 1, et l'entier 0 l'IA ou le joueur 2
+            int[] donneesSauvegarde = new int[] { r.Next(2), 1, -1, -1 } ; //contient les données de type entier d'initialisation et/ou de sauvegarde
+            // dans l'ordre : joueurActuel, compteurTours, piecePrec, CasePrec
                         
-            //si une sauvegarde valide est enregistrée dans Sauvegarde.txt, il la lit, sinon le jeu commence avec les valeurs initialisées ci-dessus, à savoir un plateau vide
+            //si une sauvegarde valide est enregistrée dans Sauvegarde.txt, il la lit, sinon le jeu commence avec les valeurs initialisées ci-dessus, à savoir un plateau vide et un premier joueur au hasard
             if (SauvegardeValide(cheminFinal)) {
                 string rep;
                 do {
                 Console.WriteLine("Une sauvegarde valide a été détectée. Entrez O pour la charger ou N pour lancer \nune nouvelle partie (une nouvelle sauvegarde écrasera la partie sauvegardée).");
                 rep = Console.ReadLine().ToUpper(); //accepte les lettres demandées en minuscule également
-                if (rep=="O") { LireSauvegarde(positionPiece, contenuCase, cheminFinal, ref modeJeu, ref premierJoueur, ref compteurTours);
+                if (rep=="O") { LireSauvegarde(positionPiece, contenuCase, cheminFinal, ref modeJeu, donneesSauvegarde);
                                 nouvellePartie=false;
                             }
                   
@@ -80,7 +81,7 @@ namespace Quarto1
                 } while (!(modeJeu=="F" || modeJeu=="D" || modeJeu =="J")); 
                 }
 
-            DeroulerPartie(symbolePiece, codePiece, positionPiece, contenuCase, premierJoueur,modeJeu,cheminFinal,compteurTours);
+            DeroulerPartie(symbolePiece, codePiece, positionPiece, contenuCase, donneesSauvegarde,modeJeu,cheminFinal);
 
             //int[] listePiecesNonGagnantes = ListerPieceNonGagnanteIA(positionPiece, contenuCase, codePiece);
             /*
@@ -184,26 +185,25 @@ namespace Quarto1
         }
 
         /// <summary> Boucle principale du déroulement de la partie </summary>
-        public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int premierJoueur, string modeJeu, string chemin,int compteurTours)
+        public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int[] donnees, string modeJeu, string chemin)
 		{
-			int joueurEnCours = premierJoueur; //To do : intégrer le quarto et la sauvegarde à la boucle de jeu + sauvegarder le tour et les params
 
 			int victoire = -1;
-			int[] coup = { -1, -1 , -1, -1}; //Les deux premiers chiffres restent à -1 tant qu'il n'y a pas de Quarto déclaré tandisque les 2 derniers permettent d'enregistrer le coup précédent
+			int[] coup = { -1, -1 , donnees[2], donnees[3]}; //Les deux premiers chiffres restent à -1 tant qu'il n'y a pas de Quarto déclaré tandisque les 2 derniers permettent d'enregistrer le coup précédent
 
-			while (victoire == -1 && compteurTours<=17) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
+			while (victoire == -1 && donnees[1]<=17) //boucle de jeu principale qui s'exécute tant qu'il n'y a pas Quarto
 			{
-				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,modeJeu,coup[2],coup[3]); //le passage par référence est utile pour savoir quel joueur a correctement réclamé le quarto
-                else coup = JouerPieceContreJoueur(symbole, code, position, contenu,ref joueurEnCours,chemin,compteurTours,coup[2],coup[3]); //pour le compteur, il est re-calculé lors de la lecture sauvegarde
+				if (modeJeu=="F" || modeJeu=="D") coup = JouerPieceContreIA(symbole, code, position, contenu,donnees,chemin, modeJeu);
+                else coup = JouerPieceContreJoueur(symbole, code, position, contenu,donnees,chemin); 
 				victoire = coup[0];
-                compteurTours++;
+                donnees[1]++;
 			}
 
             if (victoire==-2) {
-                SauvegarderPartie(contenu,chemin, joueurEnCours, modeJeu);
+                SauvegarderPartie(contenu,chemin, donnees, modeJeu);
                 }
 
-            else if (compteurTours==18 && victoire==-1) {  //après la pose de la dernière pièce, on demande s'il y a Quarto puis on termine la partie
+            else if (donnees[1] == 18 && victoire==-1) {  //après la pose de la dernière pièce, on demande s'il y a Quarto puis on termine la partie
 
                 Console.WriteLine("Il n'y a plus de pièces à poser : c'est une égalité !");
                 string egalite = Console.ReadLine(); //pour pouvoir voir l'écran d'égalité sinon la console se ferme
@@ -235,7 +235,7 @@ namespace Quarto1
                    else  adversaire = " contre le Joueur 2"; 
                         } 
             
-                if (joueurEnCours == 0) {
+                if (donnees[0] == 0) {
                     if (modeJeu=="F") Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------------+\n");
                     else {
                         if (modeJeu=="D")  Console.WriteLine( "\n+--------------------------------------------------+\n" +
@@ -256,73 +256,73 @@ namespace Quarto1
         
         }
                 
-		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu,ref int joueur, string chemin, int compteur,string modeJeu,int piecePrec, int casePrec)
+		public static int[] JouerPieceContreIA(string[,] symbole, string[] code, int[] position, int[] contenu,int[] donnees, string chemin, string modeJeu)
         {
+            //rappel, donnees[] représente dans l'ordre : joueurActuel, compteurTours, piecePrec, CasePrec
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
             
             //d'abord on choisit quelle pièce il faut placer
-            int piece=piecePrec;
-            int rangCase=casePrec;
+
             string requete;
             int[] sauvegarde = {-2, -2, -2, -2};
             bool partieFinie=false;
-            if (compteur>=17) partieFinie = true;
+            if (donnees[1]>=17) partieFinie = true;
 
-            if (joueur == 0 && !partieFinie) 
+            if (donnees[0] == 0 && !partieFinie) 
             { //c'est le tour de l'IA, c'est elle qui choisit une piece à jouer
-                piece = ChoisirPieceIA(position, contenu, code,modeJeu); //une pièce entre 0 et 15
-                Console.WriteLine("L'IA vous donne la piece {0}.", piece + 1);
+                donnees[2] = ChoisirPieceIA(position, contenu, code,modeJeu); //une pièce entre 0 et 15
+                Console.WriteLine("L'IA vous donne la piece {0}.", donnees[2] + 1);
                     
             }
             else
             {
-            if (compteur>4 && piece!=-1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
+            if (donnees[1]>4 && donnees[2] != -1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
                 requete=RequeteQuartoOuSauvegarde(true,3);; //ici aussi on est permissifs avec les minuscules
                 if (requete=="S") return sauvegarde;
                 else if (requete=="Q"){
-                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
                     if (test[0]!=-1) return test; } //on ne renvoie le tableau du Quarto que si il y a bien Quarto, car il ne fait que 2 éléments et la boucle ne pourrait pas continuer
                 }
 
                 if (!partieFinie) {
-                    piece = ChoisirPieceJoueur(position);
-                    Console.WriteLine("Vous avez choisi de donner la piece {0} à l'IA", piece+1); }
+                    donnees[2] = ChoisirPieceJoueur(position);
+                    Console.WriteLine("Vous avez choisi de donner la piece {0} à l'IA", donnees[2] + 1); }
             
             }
             
 			//puis on place la pièce
-            joueur = (joueur + 1) % 2;
+            donnees[0] = (donnees[0] + 1) % 2;
 
-            if (joueur == 1 && !partieFinie) 
+            if (donnees[0] == 1 && !partieFinie) 
             { //c'est le tour le l'IA, c'est donc au joueur de choisir où jouer la pièce
-                if (compteur>4 && rangCase!=-1) {
+                if (donnees[1] > 4 && donnees[2] != -1) {
                     requete=RequeteQuartoOuSauvegarde(false,3);   //ici aussi on est permissifs avec les minuscules
                     if (requete=="Q") {                     
-                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[2]);
                     if (test[0]!=-1) return test;}
                 }
-                
-                rangCase = ChoisirEmplacementJoueur(contenu);
-                Console.WriteLine("Vous avez choisi de jouer à l'emplacement {0}.", rangCase + 1);
+
+                donnees[3] = ChoisirEmplacementJoueur(contenu);
+                Console.WriteLine("Vous avez choisi de jouer à l'emplacement {0}.", donnees[3] + 1);
 
             }
             else if (!partieFinie)
             {
-				//rangCase = ChoisirEmplacementIA(contenu); //une pièce entre 0 et 15
+                //rangCase = ChoisirEmplacementIA(contenu); //une pièce entre 0 et 15
 
-				//nouvelle version de ChoisirEmplacementIA
-				rangCase = ChoisirEmplacementIA(position, contenu, code, piece, modeJeu);				
-				Console.WriteLine("L'IA joue à l'emplacement {0}.", rangCase + 1);
+                //nouvelle version de ChoisirEmplacementIA
+                donnees[3] = ChoisirEmplacementIA(position, contenu, code, donnees[2], modeJeu);				
+				Console.WriteLine("L'IA joue à l'emplacement {0}.", donnees[3] + 1);
             }
 
-            position[piece] = rangCase; //on met à jour les tableaux selon le coup joué
-            contenu[rangCase] = piece;
-            int[] temp = { -1, -1, piece, rangCase }; 
+            position[donnees[2]] = donnees[3]; //on met à jour les tableaux selon le coup joué
+            contenu[donnees[3]] = donnees[2];
+            int[] temp = { -1, -1, donnees[2], donnees[3] }; 
             
-            if (joueur==0) {
-            temp[0]=GagnerPartie(position, contenu, code, piece, rangCase)[0];
-            temp[1]=GagnerPartie(position, contenu, code, piece, rangCase)[1];
+            if (donnees[0] == 0) {
+            temp[0]=GagnerPartie(position, contenu, code, donnees[2], donnees[3])[0];
+            temp[1]=GagnerPartie(position, contenu, code, donnees[2], donnees[3])[1];
             return temp; } //l'IA réclame directement le Quarto quand elle le pose
             else return temp;
         }
@@ -543,43 +543,42 @@ namespace Quarto1
 
     //choix joueur contre un autre joueur
 
-		public static int[] JouerPieceContreJoueur(string[,] symbole, string[] code, int[] position, int[] contenu, ref int joueur, string chemin, int compteur, int piecePrec, int casePrec)
+		public static int[] JouerPieceContreJoueur(string[,] symbole, string[] code, int[] position, int[] contenu, int[] donnees, string chemin)
         {
+            //rappel, donnees[] représente dans l'ordre : joueurActuel, compteurTours, piecePrec, CasePrec
 
-            int piece=piecePrec; 
-            int rangCase=casePrec; //elles doivent être initialisées pour les utiliser dans les requêtes de quarto
             string requete;
             int[] sauvegarde = {-2, -2, -2, -2};
 
             AfficherPiecesRestantes(symbole, position);
             AfficherPlateau(symbole, position);
 
-            if (compteur>4 && piece!=-1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
-                requete=RequeteQuartoOuSauvegarde(true,joueur);; //ici aussi on est permissifs avec les minuscules
+            if (donnees[1] > 4 && donnees[2] != -1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer
+                requete=RequeteQuartoOuSauvegarde(true, donnees[0]);; //ici aussi on est permissifs avec les minuscules
                 if (requete=="S") return sauvegarde;
                 else if (requete=="Q") {
-                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
                     if (test[0]!=-1) return test; }
             }
-            if (compteur<17) { //au 17eme tour il n'y a plus de pièce à jouer
-                piece=ChoisirPieceJoueurVsJoueur(position,joueur);
+            if (donnees[1] <17) { //au 17eme tour il n'y a plus de pièce à jouer
+                donnees[2] = ChoisirPieceJoueurVsJoueur(position, donnees[0]);
 
-                joueur = (joueur + 1) % 2; //c'est le joueur à qui ce n'est pas le tour qui place la pièce
+                donnees[0] = (donnees[0] + 1) % 2; //c'est le joueur à qui ce n'est pas le tour qui place la pièce
 
-                if (compteur>4 && rangCase!=-1) {
-                    requete=RequeteQuartoOuSauvegarde(false,joueur);   //ici aussi on est permissifs avec les minuscules
+                if (donnees[1] > 4 && donnees[3]!=-1) {
+                    requete=RequeteQuartoOuSauvegarde(false, donnees[0]);   //ici aussi on est permissifs avec les minuscules
                     if (requete=="Q") {                     
-                    int[] test = GagnerPartie(position, contenu, code, piece, rangCase);
+                    int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
                     if (test[0]!=-1) return test; }
                 }
-            
-                rangCase=ChoisirEmplacementJoueurVsJoueur(contenu,joueur);
 
-                position[piece] = rangCase;
-                contenu[rangCase] = piece;
+                donnees[3] = ChoisirEmplacementJoueurVsJoueur(contenu, donnees[1]);
+
+                position[donnees[2]] = donnees[3];
+                contenu[donnees[3]] = donnees[2];
             }
 
-            int[] temp = { -1, -1, piece, rangCase };            
+            int[] temp = { -1, -1, donnees[2], donnees[3] };            
             return temp; //la partie n'est pas gagnée si le quarto n'est pas déclaré
             
         }
@@ -715,7 +714,7 @@ namespace Quarto1
             return (rangPiece);
         }
 				
-		public static int[] ListerPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)//version qui renvoit le rang des pièces non gagnantes ou -1
+		public static int[] ListerPieceNonGagnanteIA(int[] position, int[] contenu, string[] code)//version qui renvoie le rang des pièces non gagnantes ou -1
 		{      
             int[] piecesLibres = DeterminerPiecesLibres(position);
             int nbPiecesLibres = piecesLibres.Length;
@@ -1033,28 +1032,34 @@ namespace Quarto1
         
 
      //Sauvegarde
-
-        public static void SauvegarderPartie(int[] contenu, string chemin, int joueur, string modeJeu)
+        /// <summary> Sauvegarde la partie dans le fichier Sauvegarde.txt </summary>
+        public static void SauvegarderPartie(int[] contenu, string chemin, int[] donnees, string modeJeu)
 		{
-			string[] lignes = new string[19];
+			string[] lignes = new string[22];
 
-			for (int iter = 0; iter <= 15; iter++)
+			for (int iter = 0; iter <= 17; iter++)
 			{
-                int k = contenu[iter];
-                lignes[iter] = k.ToString();
+                if (iter >= 16) lignes[iter] = donnees[iter - 14].ToString();
+                else
+                {
+                    int k = contenu[iter];
+                    lignes[iter] = k.ToString();
+                }
 
             }
-            lignes[16] = "STOP -- Au-dessus de cette ligne est écrite la 16ème pièce. En-dessous sont écrits le mode de jeu et le joueur dont c'était le tour";
-            lignes[17] = modeJeu;
-            lignes[18] = joueur.ToString();
+            lignes[18] = "-- Au-dessus de cette ligne est écrit l'emplacement du dernier coup; et encore au-dessus la pièce jouée au tour précédent. Et au-dessus de ça, les valeurs de contenu[]. ---";
+            lignes[19] = modeJeu;
+            lignes[20] = donnees[0].ToString();
+            lignes[21] = " -- Fin de la sauvegarde, au-dessus de cette ligne se trouve le joueur (0 pour Joueur2 ou IA) qui devait donner la pièce à ce tour là. Et au-dessus, le mode de jeu. --";
             
-            File.WriteAllLines(chemin, lignes); //TO DO pour la sauvegarde : intégrer l'option à la boucle de jeu + prendre en compte le tour en cours, la diff et l'IA
+            File.WriteAllLines(chemin, lignes);
         }
-
-        public static bool SauvegardeValide(string chemin) //lit le fichier Sauvegarde.txt pour vérifier sa validité
+        
+        /// <summary> Lit le fichier Sauvegarde.txt pour vérifier sa validité </summary>
+        public static bool SauvegardeValide(string chemin)
         {                                                  
             string ligne;
-            bool sauvegardeValide = true; //une sauvegarde est valide lorsque ses 16 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
+            bool sauvegardeValide = true; //une sauvegarde est valide lorsque ses 18 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
             // et lorsque chaque pièce n'est écrite qu'une fois
             int nombreTeste;
             int iter = 0;
@@ -1062,65 +1067,92 @@ namespace Quarto1
 
 
             StreamReader fichier = new StreamReader(chemin);
-            while ((sauvegardeValide) && (iter < 16) && ((ligne = fichier.ReadLine()) != null))
-            {
-                if (int.TryParse(ligne, out nombreTeste)) { //on vérifie que la ligne contient un nombre (du moins une entrée convertible en int)
-                
-                    if (nombreTeste < -1 || nombreTeste > 15) //si c'est bien un nombre, on vérifie que sa valeur correspond à une pièce du jeu
+            while ((sauvegardeValide) && (iter < 18) && ((ligne = fichier.ReadLine()) != null))
+            { //les deux dernières lignes représentent le dernier coup joué, donc ont les mêmes valeurs possibles que les pièces jouées
+                if (int.TryParse(ligne, out nombreTeste))
+                { //on vérifie que la ligne contient un nombre (du moins une entrée convertible en int)
+
+                    if (nombreTeste < -1 || nombreTeste > 15)
+                    {
+                        fichier.Close(); //si c'est bien un nombre, on vérifie que sa valeur correspond à une pièce du jeu
                         return sauvegardeValide = false;
+                    }
+
 
                     else
                     {
-                        if (nombreTeste>=0) {
-                           if (emplacementPris[nombreTeste]) return sauvegardeValide = false;
-                           else emplacementPris[nombreTeste]=true; //on met à jour le tableau
+                        if (nombreTeste >= 0)
+                        {
+                            if (emplacementPris[nombreTeste] && iter<16)
+                            {
+                                fichier.Close();
+                                return sauvegardeValide = false;
+
+                            }
+                            else if (iter<16) emplacementPris[nombreTeste] = true; //on met à jour le tableau
                         }
-                    } 
+                    }
                 }
-                else return sauvegardeValide = false;
+                else
+                {
+                    fichier.Close();
+                    return sauvegardeValide = false;
+                }
                 
                 iter++;
 
             }
             fichier.ReadLine(); //on passe la ligne informative
             ligne = fichier.ReadLine();
-            if (!(ligne=="D" ||ligne =="F" || ligne =="J")) return sauvegardeValide = false; //on vérifie la ligne du mode de jeu
+            if (!(ligne == "D" || ligne == "F" || ligne == "J")) //on vérifie la ligne du mode de jeu
+            {
+                fichier.Close();
+                return sauvegardeValide = false;
+            } 
             
             ligne = fichier.ReadLine();
-            if (!(ligne=="0" || ligne=="1")) return sauvegardeValide=false; //on vérifie la dernière ligne, qui indique le code du joueur dont c'était le tour
+            if (!(ligne == "0" || ligne == "1")) //on vérifie la dernière ligne, qui indique le code du joueur dont c'était le tour
+            {
+                fichier.Close();
+                return sauvegardeValide = false;
+            }
 
             fichier.Close();
 
             return sauvegardeValide = true; //si la fonction tourne encore c'est que les 16 premières lignes sont valides
         }
-        
-        public static void LireSauvegarde(int[] position, int[] contenu, string chemin, ref string modeJeu, ref int joueur, ref int compteur)
+        /// <summary> Lit le fichier de sauvegarde et retourne les valeurs de position[], contenu[], modeJeu et donnees[] correctement </summary>
+        public static void LireSauvegarde(int[] position, int[] contenu, string chemin, ref string modeJeu, int[] donnees)
         {
             string ligne;
-
-
+            // dans l'ordre : joueurActuel, compteurTours, piecePrec, CasePrec
+            
             int iter = 0;
             StreamReader fichier = new StreamReader(chemin);
-            while ((iter < 16) && ((ligne = fichier.ReadLine()) != null))
+            while ((iter < 18) && ((ligne = fichier.ReadLine()) != null))
             {
-                //gérer les cases vides
-                if (int.Parse(ligne) != -1)
-                {
-                    position[int.Parse(ligne)] = iter;
-                   contenu[iter] = int.Parse(ligne);
-                    compteur++; //chaque pièce jouée = un tour qui a été joué
-                }
+                if (iter >= 16) donnees[iter - 14] = int.Parse(ligne); //les deux dernières lignes remplissent les coups dans le tableau donnees[]
                 else
                 {
-                    contenu[iter] = -1;
+                    //gérer les cases vides
+                    if (int.Parse(ligne) != -1)
+                    {
+                        position[int.Parse(ligne)] = iter;
+                        contenu[iter] = int.Parse(ligne);
+                        donnees[1]++; //chaque pièce jouée = un tour qui a été joué
+                    }
+                    else
+                    {
+                        contenu[iter] = -1;
+                    }
                 }
                 iter++;
             }
             
-            ligne = fichier.ReadLine();
+            ligne = fichier.ReadLine(); //cette ligne est ignorée pour pouvoir y écrire de l'information, et créer des sauvegardes plus facilement
             modeJeu = fichier.ReadLine();
-            joueur = int.Parse(fichier.ReadLine());
-
+            donnees[0] = int.Parse(fichier.ReadLine());
+            
             fichier.Close();
 
         }
