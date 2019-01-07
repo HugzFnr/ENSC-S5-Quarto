@@ -745,8 +745,9 @@ namespace Quarto1
             return -1;
         }
 
-        /// <summary> Fonction qui gère les différentes versions de sélection de case IA </summary>
-        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu)
+        //choix IA : emplacement
+        //A FAIRE : METTRE UNE LIMITE BASSE POUR LA RECHERCHE DE EMPLACEMENT PARFAIT, SINON DUREE DE RECHERCHE TROP LONGUE
+        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu)//fonction qui gère les différentes versions de sélection de case IA
         {
             if (modeJeu == "F" || pieceDonnee == -1) return ChoisirEmplacementHasardIA(contenu); //en mode facile, en reprenant une sauvegarde ou au premier tour, l'IA place au hasard
 
@@ -944,59 +945,61 @@ namespace Quarto1
             for (int i = 0; i < casesLibres.Length; i++)
                 emplacementsParfaits[i] = -1;
 
-            int nombre = 0;
-
             //pour chaque emplacement...
             foreach (int i in casesLibres)
             {
                 //... on cherche s'il y a une pièce ...
                 foreach (int j in piecesLibres)
-                {
-                    //il faut adapter position et contenu pour avoir la situation où piece est posée en i
-                    for (int k = 0; k < position.Length; k++)
+                {  
+                    //... qui soit non gagnante et vérifiant pour les autres pièces ChoisirBonEmplacement[0] == -1 pour tous les emplacements
+
+                    //... on vérifie d'abord que le coup est non gagnant pour l'adversaire
+                    bool perfection;
+                    if (ChoisirEmplacementCoupGagnantIA(copiePosition, copieContenu, code, j) == -1)
+                        perfection = true;
+                    else perfection = false;
+
+                    //pour chaque emplacement...
+                    if (perfection)
+                    foreach (int m in casesLibres)
                     {
-                        copiePosition[k] = position[k];
-                        copieContenu[k] = contenu[k];
+                        //... on cherche si toutes les pièces ...
+                        foreach (int n in piecesLibres)
+                        {
+                            //il faut adapter position et contenu pour avoir la situation où piece est posée en i
+                            for (int k = 0; k < position.Length; k++)
+                            {
+                                copiePosition[k] = position[k];
+                                copieContenu[k] = contenu[k];
+                            }
+
+                            //piece est en i
+                            copiePosition[piece] = i;
+                            //en i on a piece
+                            copieContenu[i] = piece;
+
+                            //j est en m
+                            copiePosition[j] = m;
+                            //en m on a j
+                            copieContenu[m] = j;
+
+                            //... n'ont aucun bon emplacement AU SENS DE LA FONCTION - c'est à dire ne permettant pas d'avoir des pièces non gagnantes à donner
+                            if (ChoisirBonEmplacement(copiePosition, copieContenu, code, n)[0] != -1)
+                            {
+                                perfection = false;
+                            }
+                        }
                     }
-
-                    //piece est en i
-                    copiePosition[piece] = i;
-                    //en i on a piece
-                    copieContenu[i] = piece;
-
-                    //... qui n'a aucun bon emplacement
-                    if (ChoisirBonEmplacement(copiePosition, copieContenu, code, j)[0] == -1)
+                    //si perfection est toujours true, ça prouve qu'on a bien ChoisirBonEmplacement == -1 pour toutes les pièces qui restent
+                    if (perfection)
                     {
-                        emplacementsParfaits[nombre] = i;
-
+                        int[] emplacementParfait = { i };
+                        return emplacementParfait;
                     }
                 }
-                nombre++;
-            }
-
-            int count = 0;
-            foreach (int i in emplacementsParfaits)
-                if (i != -1)
-                    count++;
-
-            if (count != 0)
-            {
-                int[] listeEmplacementsParfaits = new int[count];
-                int j = 0;
-                foreach (int i in emplacementsParfaits)
-                    if (i != -1)
-                    {
-                        listeEmplacementsParfaits[j] = i;
-                        j++;
-                    }
-                return listeEmplacementsParfaits;
-            }
-            else
-            {
-                int[] listeEmplacementsParfaits = { -1 };
-                return listeEmplacementsParfaits;
-            }
-            
+            }            
+            int[] listeEmplacementsParfaits = { -1 };
+            return listeEmplacementsParfaits;
         }
         
 
