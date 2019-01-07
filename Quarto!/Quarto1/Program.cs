@@ -238,11 +238,17 @@ namespace Quarto1
                 if (joueurEnCours == 0) {
                     if (modeJeu=="F") Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode facile contre le Joueur 1 |\n+--------------------------------------+\n");
                     else {
-                        if (modeJeu=="D")  Console.WriteLine("\n+--------------------------------------+\n|Victoire de l'IA mode difficile contre le Joueur 1|\n+--------------------------------------+\n"); 
-                         else Console.WriteLine("\n+--------------------------------------+\n|Victoire du Joueur 2 contre le Joueur 1 |\n+--------------------------------------+\n"); 
+                        if (modeJeu=="D")  Console.WriteLine( "\n+--------------------------------------------------+\n" +
+                                                                "|Victoire de l'IA mode difficile contre le Joueur 1|\n" +
+                                                                "+--------------------------------------------------+\n"); 
+                         else Console.WriteLine(  "\n+----------------------------------------+\n" +
+                                                    "|Victoire du Joueur 2 contre le Joueur 1 |\n" +
+                                                    "+----------------------------------------+\n"); 
                         }
                     }
-                else Console.WriteLine("\n+-----------------------------------------+\n|Victoire du Joueur 1" + adversaire +" |\n+-----------------------------------------+\n"); 
+                else Console.WriteLine(     "\n+-----------------------------------------+\n" +
+                                            "|Victoire du Joueur 1" + adversaire +
+                                            " |\n+-----------------------------------------+\n"); 
 
                 string fin = Console.ReadLine(); //pour pouvoir voir l'écran de victoire sinon la console se ferme
 
