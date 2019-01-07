@@ -974,7 +974,7 @@ namespace Quarto1
             for (int i = 0; i < casesLibres.Length; i++)
                 emplacementsParfaits[i] = -1;
 
-            int number = 0;
+            int nombre = 0;
 
             //pour chaque emplacement...
             foreach (int i in casesLibres)
@@ -997,10 +997,11 @@ namespace Quarto1
                     //... qui n'a aucun bon emplacement
                     if (ChoisirBonEmplacement(copiePosition, copieContenu, code, j)[0] == -1)
                     {
-                        emplacementsParfaits[number] = i;
-                        number++;
+                        emplacementsParfaits[nombre] = i;
+
                     }
                 }
+                nombre++;
             }
 
             int count = 0;
