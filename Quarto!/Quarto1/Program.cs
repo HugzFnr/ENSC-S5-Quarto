@@ -398,7 +398,7 @@ namespace Quarto1
 
             if (donnees[0] == 0 && !partieFinie)
             { //c'est le tour de l'IA, c'est elle qui choisit une piece à jouer
-                donnees[2] = ChoisirPieceIA(position, contenu, code, modeJeu); //une pièce entre 0 et 15
+                donnees[2] = ChoisirPieceIA(position, contenu, code, modeJeu, donnees[1]); //une pièce entre 0 et 15
                 Console.WriteLine("L'IA vous donne la piece {0}.", donnees[2] + 1);
 
             }
@@ -447,7 +447,7 @@ namespace Quarto1
                 //rangCase = ChoisirEmplacementIA(contenu); //une pièce entre 0 et 15
 
                 //nouvelle version de ChoisirEmplacementIA
-                donnees[3] = ChoisirEmplacementIA(position, contenu, code, donnees[2], modeJeu);
+                donnees[3] = ChoisirEmplacementIA(position, contenu, code, donnees[2], modeJeu, donnees[1]);
                 Console.WriteLine("L'IA joue à l'emplacement {0}.", donnees[3] + 1);
             }
 
@@ -635,19 +635,18 @@ namespace Quarto1
      //Fonctions de l'IA
 
         /// <summary> Fonction qui gère les différentes versions de sélection de pièce IA </summary>
-        public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code, string modeJeu)
+        public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code, string modeJeu, int compteur)
 		{
             if (modeJeu == "F") return ChoisirPieceHasardIA(position); //en mode de difficulté facile, l'IA joue tout au hasard
             
             int[] piecesLibres = DeterminerPiecesLibres(contenu);
-            int pieceParfaite = ChoisirPieceParfaite(position, contenu, code);
-            //si on trouve une pièce parfaite, on la donne
-            if (pieceParfaite != -1)
+            if (compteur >= 8)
             {
-                Console.WriteLine("pièce parfaite trouvée - ChoisirPieceIA");
-                return pieceParfaite;
-            }
-            else
+                int pieceParfaite = ChoisirPieceParfaite(position, contenu, code);
+                //si on trouve une pièce parfaite, on la donne
+                if (pieceParfaite != -1) return pieceParfaite;                
+            } 
+            
             //si on trouve une pièceNonGagnante, on la donne
             if (ListerPieceNonGagnanteIA(position, contenu, code)[0] != -1)
             {
@@ -656,14 +655,12 @@ namespace Quarto1
                 Random aleatoire = new Random();
                 int rangPieceDonnee = aleatoire.Next(pieceNonGagnante.Length); //nb aléatoire entre 0 et nbCoupsNonGagnants
 
-                Console.WriteLine("pièce non gagnante trouvée - ChoisirPieceIA");
                 //on choisit un coup non gagnant au hasard parmi ceux disponibles
                 return pieceNonGagnante[rangPieceDonnee];
             }
             //sinon, on a forcément perdu et on choisit donc une pièce au hasard
             else
             {
-                Console.WriteLine("pièce choisie au hasard - ChoisirPieceIA");
                 return ChoisirPieceHasardIA(position);
             }
 
@@ -746,48 +743,42 @@ namespace Quarto1
         }
 
         //choix IA : emplacement
-        //A FAIRE : METTRE UNE LIMITE BASSE POUR LA RECHERCHE DE EMPLACEMENT PARFAIT, SINON DUREE DE RECHERCHE TROP LONGUE
-        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu)//fonction qui gère les différentes versions de sélection de case IA
+        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu, int compteur)//fonction qui gère les différentes versions de sélection de case IA
         {
             if (modeJeu == "F" || pieceDonnee == -1) return ChoisirEmplacementHasardIA(contenu); //en mode facile, en reprenant une sauvegarde ou au premier tour, l'IA place au hasard
 
-            //si on trouve un coup gagnant, on le joue            
+            //si on trouve un coup gagnant, on le joue
             if (ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee) != -1)
+                return ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee);                
+            
+            if (compteur >= 8)
             {
-                Console.WriteLine("emplacement gagnant trouvé");
-                return ChoisirEmplacementCoupGagnantIA(position, contenu, code, pieceDonnee);
-            }
-            else
-            //si on trouve un coup parfait, on le joue
-            if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee)[0] != -1)
-            {
-                Console.WriteLine("emplacement parfait trouvé");
-
-                int[] emplacementsParfaits = ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
-
-                Random aleatoire = new Random();
-                int emplacementChoisi = emplacementsParfaits[aleatoire.Next(emplacementsParfaits.Length)];
-
-                return emplacementChoisi;
-            }
-            else
-            //sinon on joue un bon coup
-            {
-                int[] bonEmplacement = ChoisirBonEmplacement(position, contenu, code, pieceDonnee);
-                if (bonEmplacement[0] != -1)
+                //si on trouve un coup parfait, on le joue
+                if (ChoisirEmplacementParfait(position, contenu, code, pieceDonnee)[0] != -1)
                 {
+                    int[] emplacementsParfaits = ChoisirEmplacementParfait(position, contenu, code, pieceDonnee);
+
                     Random aleatoire = new Random();
-                    int emplacement = bonEmplacement[aleatoire.Next(bonEmplacement.Length)];
-                    Console.WriteLine("bon emplacement trouvé");
-                    return emplacement;
-                }
-                //s'il n'y a ni coup gagnant, ni coup parfait, ni bon coup, on joue au hasard puisqu'on a forcément perdu 
-                else
-                {
-                    Console.WriteLine("pas de bon coup - ChoisirEmplacementIA");
-                    return ChoisirEmplacementHasardIA(contenu);
+                    int emplacementChoisi = emplacementsParfaits[aleatoire.Next(emplacementsParfaits.Length)];
+
+                    return emplacementChoisi;
                 }
             }
+            
+            //sinon on joue un bon coup            
+            int[] bonEmplacement = ChoisirBonEmplacement(position, contenu, code, pieceDonnee);
+            if (bonEmplacement[0] != -1)
+            {
+                Random aleatoire = new Random();
+                int emplacement = bonEmplacement[aleatoire.Next(bonEmplacement.Length)];
+                return emplacement;
+            }
+            //s'il n'y a ni coup gagnant, ni coup parfait, ni bon coup, on joue au hasard puisqu'on a forcément perdu 
+            else
+            {
+                return ChoisirEmplacementHasardIA(contenu);
+            }
+            
         }
 
         /// <summary> version qui choisit au hasard une case parmi celles disponibles pour jouer sa pièce </summary>
