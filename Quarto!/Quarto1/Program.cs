@@ -425,7 +425,7 @@ namespace Quarto1
             }
 
             //puis on place la pièce
-            donnees[0] = (donnees[0] + 1) % 2;
+            donnees[0] = (donnees[0] + 1) % 2; //on passe au joueur suivant
 
             if (donnees[0] == 1 && !partieFinie)
             { //c'est le tour le l'IA, c'est donc au joueur de choisir où jouer la pièce
@@ -434,7 +434,7 @@ namespace Quarto1
                     requete = DemanderQuartoOuSauvegarde(false, 3);   //ici aussi on est permissifs avec les minuscules
                     if (requete == "Q")
                     {
-                        int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[2]);
+                        int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
                         if (test[0] != -1) return test;
                     }
                 }
@@ -446,8 +446,12 @@ namespace Quarto1
             else if (!partieFinie)
             {
                 //rangCase = ChoisirEmplacementIA(contenu); //une pièce entre 0 et 15
+                if (donnees[1] > 4)
+                {
+                    int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
+                    if (test[0] != -1) return test;
+                } //si le joueur a oublié de déclarer un quarto, l'IA gagne
 
-                //nouvelle version de ChoisirEmplacementIA
                 donnees[3] = ChoisirEmplacementIA(position, contenu, code, donnees[2], modeJeu, donnees[1]);
                 Console.WriteLine("L'IA joue à l'emplacement {0}.", donnees[3] + 1);
             }
