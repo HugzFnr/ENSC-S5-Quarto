@@ -178,6 +178,8 @@ namespace Quarto1
             Console.WriteLine("                             ");
         }
 
+    //Boucle de jeu
+
         /// <summary> Boucle principale du déroulement de la partie </summary>
         public static void DeroulerPartie(string[,] symbole, string[] code, int[] position, int[] contenu, int[] donnees, string modeJeu, string chemin)
 		{
@@ -251,20 +253,20 @@ namespace Quarto1
         public static string RequeteQuartoOuSauvegarde(bool sauvegardePossible, int joueur)
         {
             if (joueur == 0) joueur = 2;
-            string nomJoueur = "Joueur " + joueur;
+            string nomJoueur = "Joueur " + joueur + " ";
             if (joueur == 3) nomJoueur = ""; //contre l'IA on ne précise pas le nom du joueur
 
             string requeteSauvegarde;
             if (sauvegardePossible) requeteSauvegarde = " Entrez S pour arrêter la partie et la sauvegarder.\n";
             else requeteSauvegarde = "";  //il n'est possible de sauvegarder qu'en début de son tour
 
-            Console.WriteLine("\n" + nomJoueur + " Entrez Q pour réclamer un Quarto posé au tour précédent." + requeteSauvegarde + "Entrez n'importe quoi d'autre pour continuer le tour");
+            Console.WriteLine("\n" + nomJoueur + "Entrez Q pour réclamer un Quarto posé au tour précédent." + requeteSauvegarde + "Entrez n'importe quoi d'autre pour continuer le tour");
             string requete = Console.ReadLine().ToUpper();
 
             return requete;
         }
 		
-        /// <summary> Vérifie si le dernier coup joué est un Quarto ou non </summary>
+        /// <summary> Vérifie si le dernier coup joué (donné en argument) est un Quarto ou non </summary>
         public static int[] GagnerPartie(int[] position, int[] contenu, string[] code, int piecePlacee, int rangCase)        
         {   
             //retourne deux nombres, qui indiquent s'il s'agit d'un quarto en ligne ou colonne ou diagonale avec l'index du quarto dans la rangée. A défaut, retourne {-1,-1}
