@@ -63,7 +63,7 @@ namespace Quarto1
             // dans l'ordre : joueurActuel, compteurTours, piecePrec, CasePrec
                         
             //si une sauvegarde valide est enregistrée dans Sauvegarde.txt, il la lit, sinon le jeu commence avec les valeurs initialisées ci-dessus, à savoir un plateau vide et un premier joueur au hasard
-            if (SauvegardeValide(cheminFinal)) {
+            if (ValiderSauvegarde(cheminFinal)) {
                 string rep;
                 do {
                 Console.WriteLine("Une sauvegarde valide a été détectée. Entrez O pour la charger ou N pour lancer \nune nouvelle partie (une nouvelle sauvegarde écrasera la partie sauvegardée).");
@@ -248,7 +248,7 @@ namespace Quarto1
         }
 
         /// <summary> Demande au joueur dont c'est le tour s'il veut déclarer un quarto, et une sauvegarde si le bool est true </summary>
-        public static string RequeteQuartoOuSauvegarde(bool sauvegardePossible, int joueur)
+        public static string DemanderQuartoOuSauvegarde(bool sauvegardePossible, int joueur)
         {
             if (joueur == 0) joueur = 2;
             string nomJoueur = "Joueur " + joueur;
@@ -378,8 +378,7 @@ namespace Quarto1
 
             return (tabVictoire);
         }
-
-
+        
      //Choix joueur contre IA
 
         /// <summary> A chaque nouveau tour en mode de jeu vs IA, on appelle cette fonction qui demandera de jouer une pièce ou d'en choisir l'emplacement </summary>        
@@ -406,7 +405,7 @@ namespace Quarto1
             {
                 if (donnees[1] > 4 && donnees[2] != -1)
                 { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer et uniquement s'il ne vient pas de charger sa sauvegarde
-                    requete = RequeteQuartoOuSauvegarde(true, 3); ; //ici aussi on est permissifs avec les minuscules
+                    requete = DemanderQuartoOuSauvegarde(true, 3); ; //ici aussi on est permissifs avec les minuscules
                     if (requete == "S") return sauvegarde;
                     else if (requete == "Q")
                     {
@@ -430,7 +429,7 @@ namespace Quarto1
             { //c'est le tour le l'IA, c'est donc au joueur de choisir où jouer la pièce
                 if (donnees[1] > 4 && donnees[2] != -1)
                 {
-                    requete = RequeteQuartoOuSauvegarde(false, 3);   //ici aussi on est permissifs avec les minuscules
+                    requete = DemanderQuartoOuSauvegarde(false, 3);   //ici aussi on est permissifs avec les minuscules
                     if (requete == "Q")
                     {
                         int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[2]);
@@ -464,7 +463,8 @@ namespace Quarto1
             else return temp;
         }
 
-        public static int ChoisirPieceJoueur(int[] position) //le joueur choisit la pièce qu'il veut faire jouer à l'IA
+        /// <summary> Le joueur choisit la pièce qu'il veut faire jouer à l'IA
+        public static int ChoisirPieceJoueur(int[] position) 
         {
             int rangPiece = DemanderEtConvertirEnNombreEntreeJoueur("Quelle pièce voulez-vous faire jouer à l'IA ?") - 1;
 
@@ -494,7 +494,8 @@ namespace Quarto1
             return (rangPiece);
         }
 
-        public static int ChoisirEmplacementJoueur(int[] tabContenu) //le joueur choisit une case pour jouer sa pièce
+        /// <summary> Le joueur choisit une case pour jouer sa pièce
+        public static int ChoisirEmplacementJoueur(int[] tabContenu) 
         {
             int rangCase = DemanderEtConvertirEnNombreEntreeJoueur("Où voulez-vous placer la pièce ?") - 1;
 
@@ -537,7 +538,7 @@ namespace Quarto1
             AfficherPlateau(symbole, position);
 
             if (donnees[1] > 4 && donnees[2] != -1) { //à partir du 4eme tour, on demande au joueur s'il veut déclarer un quarto, sauvegarder, ou continuer
-                requete=RequeteQuartoOuSauvegarde(true, donnees[0]);; //ici aussi on est permissifs avec les minuscules
+                requete=DemanderQuartoOuSauvegarde(true, donnees[0]);; //ici aussi on est permissifs avec les minuscules
                 if (requete=="S") return sauvegarde;
                 else if (requete=="Q") {
                     int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
@@ -549,7 +550,7 @@ namespace Quarto1
                 donnees[0] = (donnees[0] + 1) % 2; //c'est le joueur à qui ce n'est pas le tour qui place la pièce
 
                 if (donnees[1] > 4 && donnees[3]!=-1) {
-                    requete=RequeteQuartoOuSauvegarde(false, donnees[0]);   //ici aussi on est permissifs avec les minuscules
+                    requete=DemanderQuartoOuSauvegarde(false, donnees[0]);   //ici aussi on est permissifs avec les minuscules
                     if (requete=="Q") {                     
                     int[] test = GagnerPartie(position, contenu, code, donnees[2], donnees[3]);
                     if (test[0]!=-1) return test; }
@@ -565,8 +566,7 @@ namespace Quarto1
             return temp; //la partie n'est pas gagnée si le quarto n'est pas déclaré
             
         }
-
-        
+              
         public static int ChoisirPieceJoueurVsJoueur(int[] position,int joueur) 
         {
             if (joueur==0) joueur=2; //on numérote les joueurs 1 et 2, plus claire pour l'utilisateur
@@ -634,6 +634,7 @@ namespace Quarto1
 
      //Fonctions de l'IA
 
+        //choix IA : pièce
         /// <summary> Fonction qui gère les différentes versions de sélection de pièce IA </summary>
         public static int ChoisirPieceIA(int[] position, int[] contenu, string[] code, string modeJeu, int compteur)
 		{
@@ -743,7 +744,8 @@ namespace Quarto1
         }
 
         //choix IA : emplacement
-        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu, int compteur)//fonction qui gère les différentes versions de sélection de case IA
+        /// <summary> Fonction qui gère les différentes versions de sélection d'emplacement IA
+        public static int ChoisirEmplacementIA(int[] position, int[] contenu, string[] code, int pieceDonnee,string modeJeu, int compteur)
         {
             if (modeJeu == "F" || pieceDonnee == -1) return ChoisirEmplacementHasardIA(contenu); //en mode facile, en reprenant une sauvegarde ou au premier tour, l'IA place au hasard
 
@@ -811,9 +813,9 @@ namespace Quarto1
             return (rangCase);
         }
 
+        /// <summary> Repère s'il y a un coup gagnant avec la pieceDonnee
         public static int ChoisirEmplacementCoupGagnantIA(int[] tabposition, int[] tabContenu, string[] tabcode, int pieceDonnee)
-        {   //IA qui repère si elle a un coup gagnant avec la pieceDonnee
-
+        {
             //décompte du nombre de cases libres sur le plateau
             int compteur = 0;
             for (int i = 0; i < 16; i++)
@@ -920,7 +922,6 @@ namespace Quarto1
             }
         }
         
-        //en cours ...
         public static int[] ChoisirEmplacementParfait(int[] position, int[] contenu, string[] code, int piece)
         {
             //l'emplacement est parfait si on trouve une piece pour laquelle le joueur n'a aucun bon emplacement où la jouer
@@ -995,6 +996,7 @@ namespace Quarto1
         
 
      //Sauvegarde
+
         /// <summary> Sauvegarde la partie dans le fichier Sauvegarde.txt </summary>
         public static void SauvegarderPartie(int[] contenu, string chemin, int[] donnees, string modeJeu)
 		{
@@ -1019,7 +1021,7 @@ namespace Quarto1
         }        
         
         /// <summary> Lit le fichier Sauvegarde.txt pour vérifier sa validité </summary>
-        public static bool SauvegardeValide(string chemin)
+        public static bool ValiderSauvegarde(string chemin)
         {                                                  
             string ligne;
             bool sauvegardeValide = true; //une sauvegarde est valide lorsque ses 18 premières lignes contiennent un nombre entre -1 (case vide) et 15 (dernière pièce)
