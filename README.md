@@ -5,3 +5,7 @@ A console version of the board game "Quarto !" by Gigamic. You can player versus
 ### Context
 
 This project was made by Guillaume GROSSE and Hugo FOURNIER in December 2018 and January 2019 for our computer science class at the ENSC.
+
+### Demonstration
+
+Here is a long video demonstration of the game that I commented in french : 
